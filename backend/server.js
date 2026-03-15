@@ -124,8 +124,8 @@ app.delete("/students/:id", async (req, res) => {
 
 app.post("/register-student", async (req, res) => {
   try {
-    const python = spawn("py", ["-3.10", "face_encode.py"]);
-
+    //const python = spawn("py", ["-3.10", "face_encode.py"]);
+    const python = spawn("python3", ["face_encode.py"]);
     python.stdin.write(req.body.photo);
     python.stdin.end();
 
@@ -213,8 +213,8 @@ function euclideanDistance(arr1, arr2) {
 
 app.post("/recognize", async (req, res) => {
   try {
-    const python = spawn("py", ["-3.10", "face_encode.py"]);
-
+    //const python = spawn("py", ["-3.10", "face_encode.py"]);
+    const python = spawn("python3", ["face_encode.py"]);
     python.stdin.write(req.body.photo);
     python.stdin.end();
 
