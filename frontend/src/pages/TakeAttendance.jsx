@@ -158,6 +158,10 @@ export default function TakeAttendance() {
           screenshotFormat="image/jpeg"
           width={300}
           height={220}
+          playsInline
+          videoCOnstraints={{
+            facingMode: "user"
+          }}
           style={{ borderRadius: 8, border: "2px solid #2ecc71" }}
         />
 

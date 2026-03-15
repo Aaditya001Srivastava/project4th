@@ -11,7 +11,7 @@ const app = express();
 /* ✅ PROPER CORS */
 app.use(cors({
   origin: [
-    "http://localhost:3000",
+    //"http://localhost:3000",
     "https://project4th.vercel.app"
   ]
 }));
