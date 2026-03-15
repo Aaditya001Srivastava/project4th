@@ -9,10 +9,12 @@ const axios = require("axios");
 const app = express();
 
 /* ✅ PROPER CORS */
+const cors = require("cors");
+
 app.use(cors({
-  origin: "https://project4th.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
 
 app.options("*", cors());
