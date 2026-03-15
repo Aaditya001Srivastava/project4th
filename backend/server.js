@@ -2,10 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const { spawn } = require("child_process");
+//const { spawn } = require("child_process");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const axios = require("axios");
 const app = express();
 
 /* ✅ PROPER CORS */
@@ -125,10 +125,12 @@ app.delete("/students/:id", async (req, res) => {
 app.post("/register-student", async (req, res) => {
   try {
     //const python = spawn("py", ["-3.10", "face_encode.py"]);
-    const python = spawn("python3", ["face_encode.py"]);
-    python.stdin.write(req.body.photo);
-    python.stdin.end();
+    const response = await axios.post(
+      "https://project4th-production.up.railway.app",
+      { image: req.body.photo }
+    );
 
+const parsed = response.data;
     python.stdout.on("data", async (data) => {
       try {
         const parsed = JSON.parse(data.toString());
@@ -214,9 +216,12 @@ function euclideanDistance(arr1, arr2) {
 app.post("/recognize", async (req, res) => {
   try {
     //const python = spawn("py", ["-3.10", "face_encode.py"]);
-    const python = spawn("python3", ["face_encode.py"]);
-    python.stdin.write(req.body.photo);
-    python.stdin.end();
+    const response = await axios.post(
+      "https://project4th-production.up.railway.app",
+      { image: req.body.photo }
+    );
+
+const parsed = response.data;
 
     let output = "";
 
