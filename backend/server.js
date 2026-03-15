@@ -2,14 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-//const { spawn } = require("child_process");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+
 const app = express();
 
 /* ✅ PROPER CORS */
-const cors = require("cors");
 
 app.use(cors({
   origin: "*",
@@ -18,6 +17,7 @@ app.use(cors({
 }));
 
 app.options("*", cors());
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
@@ -127,48 +127,37 @@ app.delete("/students/:id", async (req, res) => {
 
 app.post("/register-student", async (req, res) => {
   try {
-    //const python = spawn("py", ["-3.10", "face_encode.py"]);
+
     const response = await axios.post(
-      "https://project4th-production.up.railway.app",
+      "https://project4th-production.up.railway.app/recognize",
       { image: req.body.photo }
     );
 
-const parsed = response.data;
-    python.stdout.on("data", async (data) => {
-      try {
-        const parsed = JSON.parse(data.toString());
+    const parsed = response.data;
 
-        if (!parsed.success) {
-          return res.status(400).json({ message: "Face not detected" });
-        }
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Face not detected" });
+    }
 
-        const encoding = parsed.encoding;
+    const encoding = parsed.encoding;
 
-        const student = new Student({
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          dob: req.body.dob,
-          branch: req.body.branch,
-          mobile_number: req.body.mobile_number,
-          photo: req.body.photo,
-          faceEncoding: encoding
-        });
-
-        await student.save();
-        res.json({ message: "Student registered successfully" });
-
-      } catch (err) {
-        console.error("Encoding parse error:", err);
-        res.status(500).json({ message: "Encoding failed" });
-      }
+    const student = new Student({
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      dob: req.body.dob,
+      branch: req.body.branch,
+      mobile_number: req.body.mobile_number,
+      photo: req.body.photo,
+      faceEncoding: encoding
     });
 
-    python.stderr.on("data", (data) => {
-      console.error("Python Error:", data.toString());
-    });
+    await student.save();
+
+    res.json({ message: "Student registered successfully" });
 
   } catch (err) {
-    res.status(500).json({ message: "Error registering student" });
+    console.error("Encoding error:", err);
+    res.status(500).json({ message: "Encoding failed" });
   }
 });
 
@@ -218,108 +207,96 @@ function euclideanDistance(arr1, arr2) {
 
 app.post("/recognize", async (req, res) => {
   try {
-    //const python = spawn("py", ["-3.10", "face_encode.py"]);
+
     const response = await axios.post(
-      "https://project4th-production.up.railway.app",
+      "https://project4th-production.up.railway.app/recognize",
       { image: req.body.photo }
     );
 
-const parsed = response.data;
+    const parsed = response.data;
 
-    let output = "";
+    if (!parsed.success) {
+      return res.json({ status: "no_face" });
+    }
 
-    python.stdout.on("data", (data) => {
-      output += data.toString();
+    const unknownEncoding = parsed.encoding;
+
+    const students = await Student.find();
+
+    let bestMatch = null;
+    let smallestDistance = Infinity;
+
+    students.forEach(student => {
+      if (!student.faceEncoding) return;
+
+      const distance = euclideanDistance(
+        unknownEncoding,
+        student.faceEncoding
+      );
+
+      if (distance < smallestDistance) {
+        smallestDistance = distance;
+        bestMatch = student;
+      }
     });
 
-    python.on("close", async () => {
+    if (smallestDistance < 0.45 && bestMatch) {
 
-      const parsed = JSON.parse(output);
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
 
-      if (!parsed.success) {
-        return res.json({ status: "no_face" });
+      let period = null;
+
+      const periods = [
+        { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
+        { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
+        { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
+        { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
+        { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 }
+      ];
+
+      for (let p of periods) {
+        if (minutes >= p.start && minutes < p.end) {
+          period = p.id;
+          break;
+        }
       }
 
-      const unknownEncoding = parsed.encoding;
+      const today = now.toDateString();
 
-      const students = await Student.find();
-
-      let bestMatch = null;
-      let smallestDistance = Infinity;
-
-      students.forEach(student => {
-        if (!student.faceEncoding) return;
-
-        const distance = euclideanDistance(
-          unknownEncoding,
-          student.faceEncoding
-        );
-
-        if (distance < smallestDistance) {
-          smallestDistance = distance;
-          bestMatch = student;
-        }
+      const existingAttendance = await Attendance.findOne({
+        studentId: bestMatch._id,
+        date: today,
+        period: period
       });
 
-      if (smallestDistance < 0.45 && bestMatch) {
-
-        const now = new Date();
-        const minutes = now.getHours() * 60 + now.getMinutes();
-
-        let period = null;
-
-        const periods = [
-          { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
-          { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
-          { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
-          { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
-          { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 }
-        ];
-
-        for (let p of periods) {
-          if (minutes >= p.start && minutes < p.end) {
-            period = p.id;
-            break;   // FIX
-          }
-        }
-
-        const today = now.toDateString();
-
-        const existingAttendance = await Attendance.findOne({
-          studentId: bestMatch._id,
-          date: today,
-          period: period
-        });
-
-        if (existingAttendance) {
-          return res.json({
-            status: "already_marked",
-            name: bestMatch.first_name + " " + bestMatch.last_name
-          });
-        }
-
-        const attendance = new Attendance({
-          studentId: bestMatch._id,
-          name: bestMatch.first_name + " " + bestMatch.last_name,
-          date: today,
-          period: period,
-          time: now.toLocaleTimeString(),
-          timestamp: now.toLocaleString()
-        });
-
-        await attendance.save();
-
+      if (existingAttendance) {
         return res.json({
-          status: "matched",
-          name: bestMatch.first_name + " " + bestMatch.last_name,
-          studentId: bestMatch._id,
-          distance: smallestDistance
+          status: "already_marked",
+          name: bestMatch.first_name + " " + bestMatch.last_name
         });
       }
 
-      return res.json({ status: "unknown" });
+      const attendance = new Attendance({
+        studentId: bestMatch._id,
+        name: bestMatch.first_name + " " + bestMatch.last_name,
+        date: today,
+        period: period,
+        time: now.toLocaleTimeString(),
+        timestamp: now.toLocaleString()
+      });
 
-    });
+      await attendance.save();
+
+      return res.json({
+        status: "matched",
+        name: bestMatch.first_name + " " + bestMatch.last_name,
+        studentId: bestMatch._id,
+        distance: smallestDistance
+      });
+    }
+
+    return res.json({ status: "unknown" });
 
   } catch (err) {
     console.error(err);
