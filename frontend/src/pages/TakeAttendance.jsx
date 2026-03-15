@@ -27,6 +27,7 @@ export default function TakeAttendance() {
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
 
+
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
 
@@ -103,6 +104,11 @@ export default function TakeAttendance() {
       });
 
       const data = await response.json();
+
+      if (data.status === "outside_time") {
+        alert("Attendance allowed only between 9 AM and 1 PM");
+        return;
+      }
 
       if (data.status === "already_marked") {
         alert("Attendance already marked for this period");
