@@ -1,147 +1,206 @@
-import React, { useState, useEffect, useRef } from 'react';
+// Filename: TakeAttendance.jsx
+import { useRef, useState } from "react";
 import Webcam from "react-webcam";
-// 1. Firebase Imports (db for Firestore, and functions for writing data)
-import { db } from '../firebase'; 
-import { collection, addDoc } from 'firebase/firestore'; 
-
-/**
- * Saves a new attendance record to Firestore.
- * This function is defined locally to avoid needing a separate utils folder.
- * @param {string} studentId - The ID of the recognized student.
- * @param {object} location - The geotagged location { latitude, longitude }.
- * @returns {Promise<void>}
- */
-const recordAttendance = async (studentId, location) => {
-  try {
-    // 2. Writes data to the "attendance" collection
-    await addDoc(collection(db, "attendance"), {
-      studentId: studentId,
-      timestamp: new Date(),
-      latitude: location.latitude,
-      longitude: location.longitude,
-    });
-    console.log(`Attendance recorded for ${studentId}.`);
-  } catch (e) {
-    console.error("Error recording attendance: ", e);
-    // In a production app, you would show a user-friendly error here.
-    alert("Failed to save attendance record to the database."); 
-  }
-};
-
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);
-  const [status, setStatus] = useState("Initializing...");
-  const [currentLocation, setCurrentLocation] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Function to get the user's current GeoLocation
-  const getGeoLocation = () => {
-    if (navigator.geolocation) {
+  const [capturedPhoto, setCapturedPhoto] = useState("");
+
+  // 📍 Get device location
+  const getLocation = () => {
+    return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+        (pos) => {
+          resolve({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
           });
-          setStatus("Location captured. Ready to mark attendance.");
         },
-        (error) => {
-          console.error("Geolocation Error:", error);
-          setStatus(`Location error: ${error.message}. Please enable location.`);
-        }
+        () => reject("Location permission denied")
       );
-    } else {
-      setStatus("Geolocation is not supported by this browser.");
+    });
+  };
+
+  // 📍 Distance calculator
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  }
+
+  // 🕒 Detect current class period
+  function getCurrentPeriod() {
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+
+    const periods = [
+      { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
+      { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
+      { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
+      { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
+      { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 }
+    ];
+
+    for (let p of periods) {
+      if (minutes >= p.start && minutes < p.end) {
+        return p.id;
+      }
+    }
+
+    return null;
+  }
+
+  const capturePhoto = () => {
+    const imgSrc = webcamRef.current.getScreenshot();
+    if (imgSrc) {
+      setCapturedPhoto(imgSrc);
     }
   };
 
-  useEffect(() => {
-    // Get location immediately on load
-    getGeoLocation();
-  }, []);
-
-  // Handler for the core Face Recognition and Firebase Write
-  const handleMarkAttendance = async () => {
-    if (isProcessing || !currentLocation) {
-      alert("Please wait for location data or ensure location access is enabled.");
+  // 🔥 Face Recognition + Auto Attendance
+  const recognizeFace = async () => {
+    if (!capturedPhoto) {
+      alert("Please capture a photo!");
       return;
     }
-    
-    setIsProcessing(true);
-    setStatus("Capturing image and recognizing face...");
+
+    const IERT_LAT = 26.8469;
+    const IERT_LON = 80.9996;
 
     try {
-      const imageSrc = webcamRef.current.getScreenshot();
-      
-      // -------------------------------------------------------------------
-      // ⚠️ REPLACE THIS MOCK LOGIC WITH YOUR ACTUAL FACE RECOGNITION CODE
-      // -------------------------------------------------------------------
-      
-      // MOCK DATA: Simulating a 3-second face recognition delay
-      await new Promise(resolve => setTimeout(resolve, 3000)); 
-      
-      // MOCK RESULT: Randomly succeed with a student ID or fail
-      const recognizedStudentId = Math.random() > 0.3 ? "S123456" : null; 
-      
-      // -------------------------------------------------------------------
+      const location = await getLocation();
 
-      if (recognizedStudentId) {
-        // SUCCESS: Record attendance using the local function defined above
-        await recordAttendance(recognizedStudentId, currentLocation); 
-        setStatus(`Attendance marked successfully for Student: ${recognizedStudentId}`);
-      } else {
-        setStatus("Recognition failed. Face not matched or not enrolled.");
+      const distance = getDistance(
+        location.latitude,
+        location.longitude,
+        IERT_LAT,
+        IERT_LON
+      );
+
+      if (distance > 20) {
+        alert("You are not inside IERT campus!");
+        return;
       }
 
-    } catch (err) {
-      console.error("Attendance Process Error:", err);
-      setStatus("An unexpected error occurred during the attendance process.");
-    } finally {
-      setIsProcessing(false);
+      const response = await fetch("http://localhost:5000/recognize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo: capturedPhoto }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === "already_marked") {
+        alert("Attendance already marked for this period");
+        return;
+      }
+
+      if (data.status === "no_face") {
+        alert("No face detected!");
+        return;
+      }
+
+      if (data.status === "unknown") {
+        alert("Face not recognized!");
+        return;
+      }
+
+      if (data.status === "matched") {
+
+        const period = getCurrentPeriod();
+
+        if (!period) {
+          alert("Attendance allowed only between 9 AM and 1 PM");
+          return;
+        }
+
+        alert("Attendance marked for " + data.name + " (Period " + period + ")");
+
+        setCapturedPhoto("");
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Recognition error");
     }
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Mark Attendance via Face ID</h2>
-      
-      <div className="card p-6 shadow-lg">
-          <div className="camera-section flex flex-col items-center">
-            <Webcam 
-              audio={false} 
-              ref={webcamRef} 
-              screenshotFormat="image/jpeg" 
-              width={480} // Set a fixed width for the webcam feed
-              videoConstraints={{
-                  width: 1280,
-                  height: 720,
-                  facingMode: "user"
-              }}
-              className="rounded-lg shadow-md mb-4"
-            />
-            
-            <button 
-              onClick={handleMarkAttendance} 
-              disabled={isProcessing || !currentLocation}
-              className={`py-3 px-8 text-white font-semibold rounded-lg transition-all transform hover:scale-105 ${
-                  isProcessing || !currentLocation ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 shadow-md'
-              }`}
-            >
-              {isProcessing ? "Processing..." : "Mark Attendance Now"}
-            </button>
-          </div>
-          
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="font-semibold text-gray-700">Status: <span className="text-blue-600 font-bold">{status}</span></p>
-            {currentLocation && (
-              <p className="text-sm text-gray-500">
-                Geo-Location: Lat <span className="font-mono text-xs">{currentLocation.latitude.toFixed(5)}</span>, 
-                Lon <span className="font-mono text-xs">{currentLocation.longitude.toFixed(5)}</span>
-              </p>
-            )}
-          </div>
+    <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
+      <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+        Take Attendance
+      </h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 20,
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          width={300}
+          height={220}
+          style={{ borderRadius: 8, border: "2px solid #2ecc71" }}
+        />
+
+        <button
+          onClick={capturePhoto}
+          style={{
+            padding: "10px 20px",
+            background: "#2ecc71",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        >
+          Capture Photo
+        </button>
       </div>
+
+      {capturedPhoto && (
+        <div style={{ marginBottom: 20 }}>
+          <p>Preview:</p>
+          <img
+            src={capturedPhoto}
+            alt="captured"
+            style={{ width: 200, borderRadius: 8 }}
+          />
+        </div>
+      )}
+
+      <button
+        onClick={recognizeFace}
+        style={{
+          padding: "10px 25px",
+          background: "#3498db",
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          cursor: "pointer",
+          fontSize: 16,
+        }}
+      >
+        Recognize & Mark Attendance
+      </button>
     </div>
   );
 }

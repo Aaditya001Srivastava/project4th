@@ -1,177 +1,192 @@
+// Filename: AddStudent.jsx
+
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
+console.log("THIS ADDSTUDENT IS LOADED");
 
-// Firebase Imports: db (Firestore) and storage (Storage)
-import { db, storage } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-export default function AddStudent() {
+export default function AddStudent() { 
   const webcamRef = useRef(null);
 
-  const [name, setName] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [email, setEmail] = useState("");
-  const [course, setCourse] = useState("");
-  const [year, setYear] = useState("");
-  const [contact, setContact] = useState("");
-  const [guardian, setGuardian] = useState("");
-  const [address, setAddress] = useState("");
-
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dob, setDob] = useState("");
+  const [branch, setBranch] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [capturedDataUrl, setCapturedDataUrl] = useState("");
   const [message, setMessage] = useState("");
 
-  // Capture webcam image
   const captureFromWebcam = () => {
-    const img = webcamRef.current.getScreenshot();
+    const img = webcamRef.current?.getScreenshot();
     if (img) {
       setCapturedDataUrl(img);
       setPhotoFile(null);
     }
   };
 
-  // File input handler
   const handleFileInput = (e) => {
-    const f = e.target.files[0];
-    if (f) {
-      setPhotoFile(f);
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
       setCapturedDataUrl("");
     }
   };
 
-  // Convert dataURL → File (Helper function defined locally)
-  function dataURLtoFile(dataurl, filename) {
-    const arr = dataurl.split(",");
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new File([u8arr], filename, { type: mime });
+  // 🔥 CHANGED: Now using MongoDB instead of localStorage
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log("HANDLE SUBMIT CALLED");
+
+  if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
+    setMessage("Please fill all fields");
+    return;
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (!photoFile && !capturedDataUrl) {
+    setMessage("Please upload or capture a photo");
+    return;
+  }
 
-    if (!name || !studentId) {
-      setMessage("Please fill name and student ID");
-      return;
-    }
+  let photoURL = capturedDataUrl;
 
-    try {
-      let photoURL = "";
-      let photoPath = "";
+  if (photoFile) {
+    const reader = new FileReader();
+    reader.readAsDataURL(photoFile);
 
-      // Check for photo existence
-      if (!photoFile && !capturedDataUrl) {
-        setMessage("Please upload or capture a photo");
-        return;
-      }
-      
-      // Upload photo to Storage
-      if (photoFile || capturedDataUrl) {
-          const fileToUpload = photoFile || dataURLtoFile(capturedDataUrl, `${studentId}-${Date.now()}.jpg`);
-          photoPath = `students/${studentId}.jpg`;
-          const storageRef = ref(storage, photoPath);
-          await uploadBytes(storageRef, fileToUpload);
-          photoURL = await getDownloadURL(storageRef);
-      }
+    await new Promise((resolve) => {
+      reader.onloadend = () => {
+        photoURL = reader.result;
+        resolve();
+      };
+    });
+  }
 
-      // SAVE DATA TO FIRESTORE (Writes to the "students" collection)
-      await addDoc(collection(db, "students"), {
-        name,
-        studentId,
-        email,
-        course,
-        year,
-        contact,
-        guardian,
-        address,
-        photoURL,
-        photoPath, // store storage path for delete
-        createdAt: new Date(),
-      });
+  try {
+    await fetch("http://localhost:5000/register-student", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        dob,
+        branch,
+        mobile_number: mobileNumber,
+        photo: photoURL
+      }),
+    });
 
-      setMessage("Student added successfully!");
+    setMessage("Student saved successfully!");
 
-      // Reset form (omitted for brevity in this response but kept in code)
-      setName(""); setStudentId(""); setEmail(""); setCourse(""); setYear(""); setContact(""); 
-      setGuardian(""); setAddress(""); setPhotoFile(null); setCapturedDataUrl("");
-      
-    } catch (err) {
-      console.error(err);
-      setMessage("Error adding student.");
-    }
-  };
+    setFirstName("");
+    setLastName("");
+    setDob("");
+    setBranch("");
+    setMobileNumber("");
+    setPhotoFile(null);
+    setCapturedDataUrl("");
 
+  } catch (error) {
+    console.error(error);
+    setMessage("Error saving student.");
+  }
+};
   return (
-    <div>
-      <h2>Register Student</h2>
+    <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
+      <h2 style={{ textAlign: "center", marginBottom: 30 }}>Register Student</h2>
 
-      <div className="card">
-        <form className="form" onSubmit={handleSubmit}>
-          <div className="row">
-            <div className="col">
-              <label>Full Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} />
+      <div
+        style={{
+          background: "#fff",
+          padding: 30,
+          borderRadius: 12,
+          boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+        }}
+      >
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <label>First Name</label>
+              <input style={inputStyle} value={firstName}
+                onChange={(e) => setFirstName(e.target.value)} />
 
-              <label>Student ID</label>
-              <input value={studentId} onChange={(e) => setStudentId(e.target.value)} />
+              <label>Last Name</label>
+              <input style={inputStyle} value={lastName}
+                onChange={(e) => setLastName(e.target.value)} />
 
-              <label>Email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} />
+              <label>DOB</label>
+              <input style={inputStyle} type="date" value={dob}
+                onChange={(e) => setDob(e.target.value)} />
 
-              <label>Course</label>
-              <input value={course} onChange={(e) => setCourse(e.target.value)} />
+              <label>Branch</label>
+              <input style={inputStyle} value={branch}
+                onChange={(e) => setBranch(e.target.value)} />
 
-              <label>Year / Semester</label>
-              <input value={year} onChange={(e) => setYear(e.target.value)} />
+              <label>Mobile Number</label>
+              <input style={inputStyle} value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)} />
             </div>
 
-            <div className="col">
-              <label>Contact</label>
-              <input value={contact} onChange={(e) => setContact(e.target.value)} />
-
-              <label>Guardian Contact</label>
-              <input value={guardian} onChange={(e) => setGuardian(e.target.value)} />
-
-              <label>Address</label>
-              <textarea value={address} onChange={(e) => setAddress(e.target.value)} />
-
+            <div style={{ flex: 1, minWidth: 200 }}>
               <label>Upload Photo</label>
-              <input type="file" accept="image/*" onChange={handleFileInput} />
+              <input style={inputStyle} type="file"
+                accept="image/*" onChange={handleFileInput} />
 
               <label style={{ marginTop: 12 }}>Or Capture from Camera</label>
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" width={240} />
-                <button type="button" className="btn btn-primary" onClick={captureFromWebcam}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10 }}>
+                <Webcam audio={false} ref={webcamRef}
+                  screenshotFormat="image/jpeg" width={200} />
+                <button type="button" style={buttonStyle}
+                  onClick={captureFromWebcam}>
                   Capture
                 </button>
               </div>
 
               {capturedDataUrl && (
-                <div style={{ marginTop: 10 }}>
-                  <p>Preview:</p>
-                  <img src={capturedDataUrl} alt="captured" style={{ width: 140, borderRadius: 8 }} />
+                <div style={{ marginTop: 15 }}>
+                  <p style={{ margin: "5px 0" }}>Preview:</p>
+                  <img src={capturedDataUrl}
+                    alt="captured"
+                    style={{ width: 140, borderRadius: 8 }} />
                 </div>
               )}
             </div>
           </div>
 
-          <div style={{ marginTop: 16 }} className="space-between">
-            <button type="submit" className="btn btn-primary">
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <button type="submit" style={buttonStyle}>
               Save Student
             </button>
-
-            {message && (
-              <span style={{ color: "#064e3b", fontWeight: "bold" }}>
-                {message}
-              </span>
-            )}
           </div>
         </form>
+
+        {message && (
+          <p style={{ color: "green", textAlign: "center", marginTop: 15 }}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: 10,
+  marginTop: 5,
+  marginBottom: 15,
+  borderRadius: 6,
+  border: "1px solid #ccc",
+  fontSize: 14,
+};
+
+const buttonStyle = {
+  padding: "10px 20px",
+  background: "#2ecc71",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontSize: 14,
+};
