@@ -262,6 +262,13 @@ app.post("/recognize", async (req, res) => {
         }
       }
 
+      if (!period) {
+        return res.json({
+          status: "outside_time",
+          message: "Attendance allowed only between 9 AM and 1 PM"
+        });
+      }
+
       const today = now.toDateString();
 
       const existingAttendance = await Attendance.findOne({
