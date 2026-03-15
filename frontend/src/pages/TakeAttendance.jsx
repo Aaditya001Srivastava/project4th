@@ -1,6 +1,7 @@
 // Filename: TakeAttendance.jsx
 import { useRef, useState } from "react";
-import Webcam from "react-webcam";
+//import Webcam from "react-webcam";
+const Webcam = require("react-webcam").default;
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);

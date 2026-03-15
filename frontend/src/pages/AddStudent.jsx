@@ -1,7 +1,8 @@
 // Filename: AddStudent.jsx
 
 import React, { useRef, useState } from "react";
-import Webcam from "react-webcam";
+//import Webcam from "react-webcam";
+const Webcam = require("react-webcam").default;
 console.log("THIS ADDSTUDENT IS LOADED");
 
 export default function AddStudent() { 
