@@ -10,7 +10,7 @@ const app = express();
 
 /* ✅ PROPER CORS */
 
-const cors = require("cors");
+
 
 app.use(cors());
 
