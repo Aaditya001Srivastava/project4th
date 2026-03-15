@@ -10,10 +10,10 @@ export default function StudentAttendance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const studentRes = await fetch("http://localhost:5000/students");
+        const studentRes = await fetch("https://project4th-backend-1.onrender.com/students");
         const studentData = await studentRes.json();
 
-        const attendanceRes = await fetch("http://localhost:5000/attendance");
+        const attendanceRes = await fetch("https://project4th-backend-1.onrender.com/attendance");
         const attendanceData = await attendanceRes.json();
 
         setStudents(studentData);

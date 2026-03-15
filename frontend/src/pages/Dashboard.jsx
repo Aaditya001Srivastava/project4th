@@ -10,13 +10,13 @@ export default function Dashboard() {
   }, []);
 
   const loadStudents = async () => {
-    const res = await fetch("http://localhost:5000/students");
+    const res = await fetch("https://project4th-backend-1.onrender.com/students");
     const data = await res.json();
     setStudents(data);
   };
 
   const deleteStudent = async (id) => {
-    await fetch(`http://localhost:5000/students/${id}`, {
+    await fetch(`https://project4th-backend-1.onrender.com/students/${id}`, {
       method: "DELETE",
     });
     loadStudents();

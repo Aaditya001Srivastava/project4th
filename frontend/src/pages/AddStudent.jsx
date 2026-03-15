@@ -62,7 +62,7 @@ const handleSubmit = async (e) => {
   }
 
   try {
-    await fetch("http://localhost:5000/register-student", {
+    await fetch("https://project4th-backend-1.onrender.com/register-student", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

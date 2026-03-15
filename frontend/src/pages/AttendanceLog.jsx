@@ -8,10 +8,10 @@ export default function AttendanceLog() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const attendanceRes = await fetch("http://localhost:5000/attendance");
+        const attendanceRes = await fetch("https://project4th-backend-1.onrender.com/attendance");
         const attendanceData = await attendanceRes.json();
 
-        const studentRes = await fetch("http://localhost:5000/students");
+        const studentRes = await fetch("https://project4th-backend-1.onrender.com/students");
         const studentData = await studentRes.json();
 
         setRecords(attendanceData);
@@ -31,7 +31,7 @@ export default function AttendanceLog() {
   // 🔥 DELETE FUNCTION
   const deleteAttendance = async (id) => {
     try {
-      await fetch(`http://localhost:5000/attendance/${id}`, {
+      await fetch(`https://project4th-backend-1.onrender.com/attendance/${id}`, {
         method: "DELETE",
       });
 
