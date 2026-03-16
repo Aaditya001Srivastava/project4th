@@ -18,7 +18,11 @@ export default function AddStudent() {
   const [message, setMessage] = useState("");
 
   const captureFromWebcam = () => {
-    const img = webcamRef.current?.getScreenshot();
+    const img = webcamRef.current?.getScreenshot({
+      width: 320,
+      height: 240
+    });
+
     if (img) {
       setCapturedDataUrl(img);
       setPhotoFile(null);
@@ -146,6 +150,7 @@ try {
                   audio={false}
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
+                  screenshotQuality={0.4}
                   width={200}
                   videoConstraints={{ facingMode: "user" }}
                 />
