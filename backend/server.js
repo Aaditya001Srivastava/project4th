@@ -253,7 +253,7 @@ app.post("/recognize", async (req, res) => {
       }
     });
 
-    if (smallestDistance < 0.45 && bestMatch) {
+    if (  bestMatch && smallestDistance < 0.6) {
 
       const now = new Date();
       const minutes = now.getHours() * 60 + now.getMinutes();

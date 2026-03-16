@@ -25,7 +25,10 @@ async def recognize(data: dict):
 
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        face_locations = face_recognition.face_locations(rgb)
+        # Resize for better detection
+        rgb = cv2.resize(rgb, (0,0), fx=0.5, fy=0.5)
+
+        face_locations = face_recognition.face_locations(rgb, model="hog")
 
         if len(face_locations) == 0:
             return {"success": False}
