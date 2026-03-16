@@ -181,43 +181,6 @@ app.post("/register-student", async (req, res) => {
 
     console.log("Register student request received");
 
-    const imageData = req.body.photo || req.body.image;
-
-    if (!imageData) {
-      return res.status(400).json({ message: "Photo is required" });
-    }
-
-    let base64 = imageData;
-    if (imageData.includes(",")) {
-      base64 = imageData.split(",")[1];
-    }
-
-    console.log("Sending image to Python API...");
-
-    let response;
-
-    try {
-      response = await axios.post(
-        "https://project4th-production.up.railway.app/recognize",
-        { image: base64 },
-        { timeout: 20000 }
-      );
-    } catch (apiError) {
-      console.error("Python API error:", apiError.message);
-      return res.status(500).json({ message: "Face encoding service failed" });
-    }
-
-    const parsed = response.data;
-
-    console.log("Python API response:", parsed);
-
-    if (!parsed.success) {
-      return res.status(400).json({ message: "Face not detected" });
-    }
-
-    const encoding = parsed.encoding;
-    //const encoding = new Array(128).fill(0)
-
     const student = new Student({
       first_name: req.body.first_name,
       last_name: req.body.last_name,
@@ -225,16 +188,18 @@ app.post("/register-student", async (req, res) => {
       branch: req.body.branch,
       mobile_number: req.body.mobile_number,
       photo: req.body.photo,
-      faceEncoding: encoding
+      faceEncoding: []
     });
 
     await student.save();
 
+    console.log("Student saved");
+
     res.json({ message: "Student registered successfully" });
 
   } catch (err) {
-    console.error("Encoding error:", err);
-    res.status(500).json({ message: "Encoding failed" });
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Error registering student" });
   }
 });
 
