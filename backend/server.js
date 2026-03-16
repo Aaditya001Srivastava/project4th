@@ -181,7 +181,16 @@ app.post("/register-student", async (req, res) => {
 
     console.log("Register student request received");
 
-    const base64 = req.body.photo.split(",")[1];
+    const imageData = req.body.photo || req.body.image;
+
+    if (!imageData) {
+      return res.status(400).json({ message: "Photo is required" });
+    }
+
+    let base64 = imageData;
+    if (imageData.includes(",")) {
+      base64 = imageData.split(",")[1];
+    }
 
     console.log("Sending image to Python API...");
 
@@ -191,7 +200,7 @@ app.post("/register-student", async (req, res) => {
       response = await axios.post(
         "https://project4th-production.up.railway.app/recognize",
         { image: base64 },
-        { timeout: 10000 }
+        { timeout: 20000 }
       );
     } catch (apiError) {
       console.error("Python API error:", apiError.message);
@@ -207,6 +216,7 @@ app.post("/register-student", async (req, res) => {
     }
 
     const encoding = parsed.encoding;
+    //const encoding = new Array(128).fill(0)
 
     const student = new Student({
       first_name: req.body.first_name,

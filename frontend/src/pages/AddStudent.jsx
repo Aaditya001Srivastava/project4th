@@ -61,37 +61,43 @@ const handleSubmit = async (e) => {
       };
     });
   }
+try {
+  const response = await fetch("https://project4th-backend-1.onrender.com/register-student", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      first_name: firstName,
+      last_name: lastName,
+      dob,
+      branch,
+      mobile_number: mobileNumber,
+      photo: photoURL
+    }),
+  });
 
-  try {
-    await fetch("https://project4th-backend-1.onrender.com/register-student", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        dob,
-        branch,
-        mobile_number: mobileNumber,
-        photo: photoURL
-      }),
-    });
+  const data = await response.json();
 
-    setMessage("Student saved successfully!");
-
-    setFirstName("");
-    setLastName("");
-    setDob("");
-    setBranch("");
-    setMobileNumber("");
-    setPhotoFile(null);
-    setCapturedDataUrl("");
-
-  } catch (error) {
-    console.error(error);
-    setMessage("Error saving student.");
+  if (!response.ok) {
+    setMessage(data.message || "Failed to save student");
+    return;
   }
+
+  setMessage("Student saved successfully!");
+
+  setFirstName("");
+  setLastName("");
+  setDob("");
+  setBranch("");
+  setMobileNumber("");
+  setPhotoFile(null);
+  setCapturedDataUrl("");
+
+} catch (error) {
+  console.error(error);
+  setMessage("Error saving student.");
+}
 };
   return (
     <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
@@ -136,8 +142,13 @@ const handleSubmit = async (e) => {
 
               <label style={{ marginTop: 12 }}>Or Capture from Camera</label>
               <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10 }}>
-                <Webcam audio={false} ref={webcamRef}
-                  screenshotFormat="image/jpeg" width={200} />
+                <Webcam
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  width={200}
+                  videoConstraints={{ facingMode: "user" }}
+                />
                 <button type="button" style={buttonStyle}
                   onClick={captureFromWebcam}>
                   Capture
