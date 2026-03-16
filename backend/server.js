@@ -378,8 +378,10 @@ app.post("/recognize", async (req, res) => {
 
     if (bestMatch && smallestDistance < 0.6) {
 
-      const now = new Date(Date.now()+5.5*60*60*1000);
-      const minutes = now.getHours() * 60 + now.getMinutes();
+      // const now = new Date(Date.now() + 5.5*60*60*1000);
+      const now = new Date();
+      const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const minutes = istTime.getHours() * 60 + istTime.getMinutes();
 
       let period = null;
 
@@ -405,7 +407,7 @@ app.post("/recognize", async (req, res) => {
         });
       }
 
-      const today = now.toDateString();
+      const today = istTime.toDateString();
 
       const existingAttendance = await Attendance.findOne({
         studentId: bestMatch._id,
@@ -425,8 +427,8 @@ app.post("/recognize", async (req, res) => {
         name: bestMatch.first_name + " " + bestMatch.last_name,
         date: today,
         period: period,
-        time: now.toLocaleTimeString(),
-        timestamp: now.toLocaleString()
+        time: istTime.toLocaleTimeString(),
+        timestamp: istTime.toLocaleString()
       });
 
       await attendance.save();
