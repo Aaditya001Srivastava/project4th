@@ -382,6 +382,7 @@ app.post("/recognize", async (req, res) => {
       const now = new Date();
       const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
       const minutes = istTime.getHours() * 60 + istTime.getMinutes();
+      console.log("IST TIME:", istTime.getHours(), istTime.getMinutes());
 
       let period = null;
 
