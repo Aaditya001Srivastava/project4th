@@ -195,7 +195,9 @@ app.post("/register-student", async (req, res) => {
 
     console.log("Student saved");
 
-    res.json({ message: "Student registered successfully" });
+    res.json({ 
+      success:true,
+      message: "Student registered successfully" });
 
   } catch (err) {
     console.error("Register error:", err);
