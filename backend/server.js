@@ -219,10 +219,11 @@ function euclideanDistance(arr1, arr2) {
 
 app.post("/recognize", async (req, res) => {
   try {
+    const base64 = req.body.photo.split(",")[1];
 
     const response = await axios.post(
       "https://project4th-production.up.railway.app/recognize",
-      { image: req.body.photo }
+      { image: base64 }
     );
 
     const parsed = response.data;

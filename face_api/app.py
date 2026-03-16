@@ -9,14 +9,33 @@ app = FastAPI()
 @app.post("/recognize")
 async def recognize(data: dict):
 
-    image_base64 = data["image"]
+    try:
+        img_base64 = data["image"]
 
-    image_bytes = base64.b64decode(image_base64.split(",")[1])
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
 
-    face_locations = face_recognition.face_locations(img)
+        img_bytes = base64.b64decode(img_base64)
 
-    return {
-        "faces_detected": len(face_locations)
-    }
+        np_arr = np.frombuffer(img_bytes, np.uint8)
+
+        image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+        if image is None:
+            return {"success": False, "error": "image decode failed"}
+
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        face_locations = face_recognition.face_locations(rgb)
+
+        if len(face_locations) == 0:
+            return {"success": False}
+
+        encoding = face_recognition.face_encodings(rgb, face_locations)[0]
+
+        return {
+            "success": True,
+            "encoding": encoding.tolist()
+        }
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
