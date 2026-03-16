@@ -11,8 +11,7 @@ async def recognize(data: dict):
 
     try:
         img_base64 = data["image"]
-
-        
+        print("IMAGE LENGTH:", len(img_base64))
 
         img_bytes = base64.b64decode(img_base64)
 
@@ -27,7 +26,7 @@ async def recognize(data: dict):
 
         # Resize for better detection
         rgb = cv2.resize(rgb, (0,0), fx=0.5, fy=0.5)
-        
+
         face_locations = face_recognition.face_locations(
             rgb,
             number_of_times_to_upsample=2,

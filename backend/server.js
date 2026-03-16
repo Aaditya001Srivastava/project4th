@@ -217,13 +217,136 @@ function euclideanDistance(arr1, arr2) {
   return Math.sqrt(sum);
 }
 
+// app.post("/recognize", async (req, res) => {
+//   try {
+//     const base64 = req.body.photo.split(",")[1];
+
+//     const response = await axios.post(
+//       "https://project4th-production.up.railway.app/recognize",
+//       { image: base64 }
+//     );
+
+//     const parsed = response.data;
+
+//     if (!parsed.success) {
+//       return res.json({ status: "no_face" });
+//     }
+
+//     const unknownEncoding = parsed.encoding;
+
+//     const students = 
+//     await Student.find();
+
+//     let bestMatch = null;
+//     let smallestDistance = Infinity;
+
+//     students.forEach(student => {
+//       if (!student.faceEncoding) return;
+
+//       const distance = euclideanDistance(
+//         unknownEncoding,
+//         student.faceEncoding
+//       );
+
+//       if (distance < smallestDistance) {
+//         smallestDistance = distance;
+//         bestMatch = student;
+//       }
+//     });
+
+//     if (  bestMatch && smallestDistance < 0.6) {
+
+//       const now = new Date();
+//       const minutes = now.getHours() * 60 + now.getMinutes();
+
+//       let period = null;
+
+//       const periods = [
+//         { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
+//         { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
+//         { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
+//         { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
+//         { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 }
+//       ];
+
+//       for (let p of periods) {
+//         if (minutes >= p.start && minutes < p.end) {
+//           period = p.id;
+//           break;
+//         }
+//       }
+
+//       if (!period) {
+//         return res.json({
+//           status: "outside_time",
+//           message: "Attendance allowed only between 9 AM and 1 PM"
+//         });
+//       }
+
+//       const today = now.toDateString();
+
+//       const existingAttendance = await Attendance.findOne({
+//         studentId: bestMatch._id,
+//         date: today,
+//         period: period
+//       });
+
+//       if (existingAttendance) {
+//         return res.json({
+//           status: "already_marked",
+//           name: bestMatch.first_name + " " + bestMatch.last_name
+//         });
+//       }
+
+//       const attendance = new Attendance({
+//         studentId: bestMatch._id,
+//         name: bestMatch.first_name + " " + bestMatch.last_name,
+//         date: today,
+//         period: period,
+//         time: now.toLocaleTimeString(),
+//         timestamp: now.toLocaleString()
+//       });
+
+//       await attendance.save();
+
+//       return res.json({
+//         status: "matched",
+//         name: bestMatch.first_name + " " + bestMatch.last_name,
+//         studentId: bestMatch._id,
+//         distance: smallestDistance
+//       });
+//     }
+
+//     return res.json({ status: "unknown" });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ status: "error" });
+//   }
+// });
+
 app.post("/recognize", async (req, res) => {
   try {
-    const base64 = req.body.photo.split(",")[1];
 
+    // Accept either "photo" or "image" from frontend
+    const imageData = req.body.photo || req.body.image;
+
+    if (!imageData) {
+      return res.json({ status: "no_image" });
+    }
+
+    // Remove base64 prefix safely
+    let base64 = imageData;
+
+    if (imageData.includes(",")) {
+      base64 = imageData.split(",")[1];
+    }
+
+    // Send image to Python face API
     const response = await axios.post(
       "https://project4th-production.up.railway.app/recognize",
-      { image: base64 }
+      { image: base64 },
+      { timeout: 20000 }
     );
 
     const parsed = response.data;
@@ -253,7 +376,7 @@ app.post("/recognize", async (req, res) => {
       }
     });
 
-    if (  bestMatch && smallestDistance < 0.6) {
+    if (bestMatch && smallestDistance < 0.6) {
 
       const now = new Date();
       const minutes = now.getHours() * 60 + now.getMinutes();
@@ -319,7 +442,7 @@ app.post("/recognize", async (req, res) => {
     return res.json({ status: "unknown" });
 
   } catch (err) {
-    console.error(err);
+    console.error("Recognition error:", err);
     res.status(500).json({ status: "error" });
   }
 });
