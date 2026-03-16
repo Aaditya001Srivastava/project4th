@@ -133,9 +133,16 @@ app.delete("/students/:id", async (req, res) => {
 app.post("/register-student", async (req, res) => {
   try {
 
+    // const response = await axios.post(
+    //   "https://project4th-production.up.railway.app/recognize",
+    //   { image: req.body.photo }
+    // );
+
+    const base64 = req.body.photo.split(",")[1];
+
     const response = await axios.post(
       "https://project4th-production.up.railway.app/recognize",
-      { image: req.body.photo }
+      { image: base64 }
     );
 
     const parsed = response.data;
