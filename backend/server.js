@@ -137,13 +137,16 @@ app.post("/register-student", async (req, res) => {
     //   "https://project4th-production.up.railway.app/recognize",
     //   { image: req.body.photo }
     // );
+    console.log("Register student request received");
 
     const base64 = req.body.photo.split(",")[1];
-
+    console.log("Sending image to python API...");
     const response = await axios.post(
       "https://project4th-production.up.railway.app/recognize",
-      { image: base64 }
+      { image: base64 },
+      {timeout: 1000}
     );
+    console.log("Python API response:", response.data);
 
     const parsed = response.data;
 
