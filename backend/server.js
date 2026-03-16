@@ -378,7 +378,7 @@ app.post("/recognize", async (req, res) => {
 
     if (bestMatch && smallestDistance < 0.6) {
 
-      const now = new Date();
+      const now = new Date(Date.now()+5.5*60*60*1000);
       const minutes = now.getHours() * 60 + now.getMinutes();
 
       let period = null;
