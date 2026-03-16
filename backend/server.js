@@ -130,25 +130,77 @@ app.delete("/students/:id", async (req, res) => {
    REGISTER STUDENT
 =========================== */
 
+// app.post("/register-student", async (req, res) => {
+//   try {
+
+//     // const response = await axios.post(
+//     //   "https://project4th-production.up.railway.app/recognize",
+//     //   { image: req.body.photo }
+//     // );
+//     console.log("Register student request received");
+
+//     const base64 = req.body.photo.split(",")[1];
+//     console.log("Sending image to python API...");
+//     const response = await axios.post(
+//       "https://project4th-production.up.railway.app/recognize",
+//       { image: base64 },
+//       {timeout: 1000}
+//     );
+//     console.log("Python API response:", response.data);
+
+//     const parsed = response.data;
+
+//     if (!parsed.success) {
+//       return res.status(400).json({ message: "Face not detected" });
+//     }
+
+//     const encoding = parsed.encoding;
+
+//     const student = new Student({
+//       first_name: req.body.first_name,
+//       last_name: req.body.last_name,
+//       dob: req.body.dob,
+//       branch: req.body.branch,
+//       mobile_number: req.body.mobile_number,
+//       photo: req.body.photo,
+//       faceEncoding: encoding
+//     });
+
+//     await student.save();
+
+//     res.json({ message: "Student registered successfully" });
+
+//   } catch (err) {
+//     console.error("Encoding error:", err);
+//     res.status(500).json({ message: "Encoding failed" });
+//   }
+// });
+
 app.post("/register-student", async (req, res) => {
   try {
 
-    // const response = await axios.post(
-    //   "https://project4th-production.up.railway.app/recognize",
-    //   { image: req.body.photo }
-    // );
     console.log("Register student request received");
 
     const base64 = req.body.photo.split(",")[1];
-    console.log("Sending image to python API...");
-    const response = await axios.post(
-      "https://project4th-production.up.railway.app/recognize",
-      { image: base64 },
-      {timeout: 1000}
-    );
-    console.log("Python API response:", response.data);
+
+    console.log("Sending image to Python API...");
+
+    let response;
+
+    try {
+      response = await axios.post(
+        "https://project4th-production.up.railway.app/recognize",
+        { image: base64 },
+        { timeout: 10000 }
+      );
+    } catch (apiError) {
+      console.error("Python API error:", apiError.message);
+      return res.status(500).json({ message: "Face encoding service failed" });
+    }
 
     const parsed = response.data;
+
+    console.log("Python API response:", parsed);
 
     if (!parsed.success) {
       return res.status(400).json({ message: "Face not detected" });
