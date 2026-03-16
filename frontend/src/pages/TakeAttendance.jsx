@@ -97,7 +97,7 @@ export default function TakeAttendance() {
         return;
       }
 
-      const response = await fetch("https://project4th-backend-1.onrender.com/recognize", {
+      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photo: capturedPhoto }),
@@ -139,7 +139,7 @@ export default function TakeAttendance() {
         setCapturedPhoto("");
       }
 
-    } catch (error) {
+     } catch (error) {
       console.error(error);
       alert("Recognition error");
     }
