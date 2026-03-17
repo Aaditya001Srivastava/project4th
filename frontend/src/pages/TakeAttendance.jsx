@@ -79,8 +79,9 @@ export default function TakeAttendance() {
       return;
     }
 
-    const IERT_LAT = 26.8469;
-    const IERT_LON = 80.9996;
+    const IERT_LAT = 25.4286;
+    const IERT_LON = 81.8463;
+    const RADIUS=1.5;
 
     try {
       const location = await getLocation();
@@ -92,10 +93,15 @@ export default function TakeAttendance() {
         IERT_LON
       );
 
-      if (distance > 20) {
-        alert("You are not inside IERT campus!");
-        return;
-      }
+console.log("Your Lat:", location.latitude);
+console.log("Your Lon:", location.longitude);
+console.log("Distance from IERT (km):", distance);
+
+// ✅ FIXED LOGIC
+if (distance > RADIUS) {
+  alert("You are not inside IERT campus!");
+  return;
+}
 
       const response = await fetch("https://project4th-backend.onrender.com/recognize", {
         method: "POST",
