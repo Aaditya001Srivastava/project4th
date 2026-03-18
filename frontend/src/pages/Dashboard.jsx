@@ -5,52 +5,49 @@ export default function Dashboard() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(20); // ✅ added
 
   useEffect(() => {
     loadStudents();
   }, []);
 
-  // const loadStudents = async () => {
-  //   const res = await fetch("https://project4th-backend-1.onrender.com/students");
-  //   const data = await res.json();
-  //   setStudents(data);
-  // };
-
   const loadStudents = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const res = await fetch(
-      "https://project4th-backend-1.onrender.com/students"
-    );
+      const res = await fetch(
+        "https://project4th-backend-1.onrender.com/students"
+      );
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch students");
+      if (!res.ok) {
+        throw new Error("Failed to fetch students");
+      }
+
+      const data = await res.json();
+
+      setStudents(data);
+    } catch (err) {
+      console.error("Error loading students:", err);
+    } finally {
+      setLoading(false);
     }
-
-    const data = await res.json();
-
-    setStudents(data);
-
-  } catch (err) {
-    console.error("Error loading students:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const deleteStudent = async (id) => {
-    try{
-      const res=await fetch(`https://project4th-backend-1.onrender.com/students/${id}`, {
-      method: "DELETE"
-    });
-    if (res.ok){
-      setStudents(prev=>prev.filters(s=>s._id!==id));
+    try {
+      const res = await fetch(
+        `https://project4th-backend-1.onrender.com/students/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (res.ok) {
+        setStudents((prev) => prev.filter((s) => s._id !== id)); // ✅ fixed bug
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
     }
-  } catch(err){
-    console.error("Delete error:",err)
-  }
-    
   };
 
   const filtered = students.filter((s) => {
@@ -86,48 +83,74 @@ export default function Dashboard() {
         </thead>
 
         <tbody>
-  {loading ? (
-    <tr>
-      <td colSpan={6} style={{ textAlign: "center" }}>
-        Loading students...
-      </td>
-    </tr>
-  ) : filtered.length === 0 ? (
-    <tr>
-      <td colSpan={6} style={{ textAlign: "center" }}>
-        No students found
-      </td>
-    </tr>
-  ) : (
-    filtered.map((s) => (
-      <tr key={s._id}>
-        <td>
-          {s.photo && <img src={s.photo} alt="profile" width={50} />}
-        </td>
-        <td>{s.first_name}</td>
-        <td>{s.last_name}</td>
-        <td>{s.branch}</td>
-        <td>{s.mobile_number}</td>
-        <td>
-          <button
-            style={{
-              padding: "5px 10px",
-              background: "red",
-              color: "white",
-              border: "none",
-              borderRadius: 5,
-              cursor: "pointer",
-            }}
-            onClick={() => deleteStudent(s._id)}
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    ))
-  )}
-</tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={6} style={{ textAlign: "center" }}>
+                Loading students...
+              </td>
+            </tr>
+          ) : filtered.length === 0 ? (
+            <tr>
+              <td colSpan={6} style={{ textAlign: "center" }}>
+                No students found
+              </td>
+            </tr>
+          ) : (
+            filtered.slice(0, visibleCount).map((s) => ( // ✅ limited render
+              <tr key={s._id}>
+                <td>
+                  {s.photo && (
+                    <img
+                      src={s.photo}
+                      alt="profile"
+                      width={40}
+                      loading="lazy" // ✅ huge performance boost
+                      style={{ objectFit: "cover" }}
+                    />
+                  )}
+                </td>
+                <td>{s.first_name}</td>
+                <td>{s.last_name}</td>
+                <td>{s.branch}</td>
+                <td>{s.mobile_number}</td>
+                <td>
+                  <button
+                    style={{
+                      padding: "5px 10px",
+                      background: "red",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 5,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => deleteStudent(s._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
       </table>
+
+      {/* ✅ Load More Button */}
+      {!loading && visibleCount < filtered.length && (
+        <button
+          onClick={() => setVisibleCount((prev) => prev + 20)}
+          style={{
+            marginTop: 15,
+            padding: "10px 20px",
+            background: "#2563eb",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        >
+          Load More
+        </button>
+      )}
     </div>
   );
 }
