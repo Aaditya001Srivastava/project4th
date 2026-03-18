@@ -18,26 +18,30 @@ export default function Login({ setUser }) {
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: 100 }}>
-      <h2>Admin Login</h2>
+  <div style={{ textAlign: "center", marginTop: 100 }}>
+    
+    {/* ✅ NEW HEADING */}
+    <h1 style={{ marginBottom: 20 }}>Smart Attendance System</h1>
 
-      <input
-        type="password"
-        placeholder="Enter admin password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ padding: 10, margin: 10 }}
-      />
+    <h2>Admin Login</h2>
 
-      <br />
+    <input
+      type="password"
+      placeholder="Enter admin password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      style={{ padding: 10, margin: 10 }}
+    />
 
-      <button onClick={handleAdminLogin}>Login</button>
+    <br />
 
-      <hr style={{ margin: 30 }} />
+    <button onClick={handleAdminLogin}>Login</button>
 
-      <button onClick={handleStudent}>
-        Continue as Student
-      </button>
-    </div>
-  );
+    <hr style={{ margin: 30 }} />
+
+    <button onClick={handleStudent}>
+      Continue as Student
+    </button>
+  </div>
+);
 }
