@@ -16,10 +16,17 @@ export default function Dashboard() {
   };
 
   const deleteStudent = async (id) => {
-    await fetch(`https://project4th-backend-1.onrender.com/students/${id}`, {
-      method: "DELETE",
+    try{
+      const res=await fetch(`https://project4th-backend-1.onrender.com/students/${id}`, {
+      method: "DELETE"
     });
-    loadStudents();
+    if (res.ok){
+      setStudents(prev=>prev.filters(s=>s._id!==id));
+    }
+  } catch(err){
+    console.error("Delete error:",err)
+  }
+    
   };
 
   const filtered = students.filter((s) => {
