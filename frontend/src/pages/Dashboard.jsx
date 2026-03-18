@@ -4,16 +4,40 @@ import React, { useEffect, useState } from "react";
 export default function Dashboard() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStudents();
   }, []);
 
+  // const loadStudents = async () => {
+  //   const res = await fetch("https://project4th-backend-1.onrender.com/students");
+  //   const data = await res.json();
+  //   setStudents(data);
+  // };
+
   const loadStudents = async () => {
-    const res = await fetch("https://project4th-backend-1.onrender.com/students");
+  try {
+    setLoading(true);
+
+    const res = await fetch(
+      "https://project4th-backend-1.onrender.com/students"
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch students");
+    }
+
     const data = await res.json();
+
     setStudents(data);
-  };
+
+  } catch (err) {
+    console.error("Error loading students:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteStudent = async (id) => {
     try{
@@ -62,41 +86,47 @@ export default function Dashboard() {
         </thead>
 
         <tbody>
-          {filtered.length === 0 ? (
-            <tr>
-              <td colSpan={6} style={{ textAlign: "center" }}>
-                No students found
-              </td>
-            </tr>
-          ) : (
-            filtered.map((s) => (
-              <tr key={s._id}>
-                <td>
-                  {s.photo && <img src={s.photo} alt="profile" width={50} />}
-                </td>
-                <td>{s.first_name}</td>
-                <td>{s.last_name}</td>
-                <td>{s.branch}</td>
-                <td>{s.mobile_number}</td>
-                <td>
-                  <button
-                    style={{
-                      padding: "5px 10px",
-                      background: "red",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 5,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => deleteStudent(s._id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+  {loading ? (
+    <tr>
+      <td colSpan={6} style={{ textAlign: "center" }}>
+        Loading students...
+      </td>
+    </tr>
+  ) : filtered.length === 0 ? (
+    <tr>
+      <td colSpan={6} style={{ textAlign: "center" }}>
+        No students found
+      </td>
+    </tr>
+  ) : (
+    filtered.map((s) => (
+      <tr key={s._id}>
+        <td>
+          {s.photo && <img src={s.photo} alt="profile" width={50} />}
+        </td>
+        <td>{s.first_name}</td>
+        <td>{s.last_name}</td>
+        <td>{s.branch}</td>
+        <td>{s.mobile_number}</td>
+        <td>
+          <button
+            style={{
+              padding: "5px 10px",
+              background: "red",
+              color: "white",
+              border: "none",
+              borderRadius: 5,
+              cursor: "pointer",
+            }}
+            onClick={() => deleteStudent(s._id)}
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
       </table>
     </div>
   );
