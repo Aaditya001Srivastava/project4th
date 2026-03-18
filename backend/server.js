@@ -106,41 +106,81 @@ const Attendance = mongoose.model("Attendance", AttendanceSchema);
 //   }
 // });
 
-const { spawn } = require("child_process");
+// const { spawn } = require("child_process");
+
+// app.post("/students", async (req, res) => {
+//   try {
+//     const { photo } = req.body;
+
+//     // Call Python script
+//     const python = spawn("python", ["encode_single.py"]);
+
+//     let result = "";
+
+//     python.stdout.on("data", (data) => {
+//       result += data.toString();
+//     });
+
+//     python.stdin.write(photo);
+//     python.stdin.end();
+
+//     python.on("close", async () => {
+//       const encoding = JSON.parse(result || "null");
+
+//       console.log("Encoding:", encoding);
+
+//       const student = new Student({
+//         ...req.body,
+//         faceEncoding: encoding
+//       });
+
+//       await student.save();
+
+//       res.status(201).json(student);
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error saving student" });
+//   }
+// });
 
 app.post("/students", async (req, res) => {
   try {
     const { photo } = req.body;
 
-    // Call Python script
-    const python = spawn("python", ["encode_single.py"]);
+    // remove base64 prefix if present
+    let base64 = photo;
+    if (photo.includes(",")) {
+      base64 = photo.split(",")[1];
+    }
 
-    let result = "";
+    // call Python API (Railway)
+    const response = await axios.post(
+      "https://project4th-production.up.railway.app/encode",
+      { image: base64 },
+      { timeout: 20000 }
+    );
 
-    python.stdout.on("data", (data) => {
-      result += data.toString();
+    const parsed = response.data;
+
+    if (!parsed.success || !parsed.encoding) {
+      return res.status(400).json({ message: "Face encoding failed" });
+    }
+
+    const student = new Student({
+      ...req.body,
+      faceEncoding: parsed.encoding
     });
 
-    python.stdin.write(photo);
-    python.stdin.end();
+    await student.save();
 
-    python.on("close", async () => {
-      const encoding = JSON.parse(result || "null");
+    console.log("Encoding saved:", parsed.encoding.length);
 
-      console.log("Encoding:", encoding);
-
-      const student = new Student({
-        ...req.body,
-        faceEncoding: encoding
-      });
-
-      await student.save();
-
-      res.status(201).json(student);
-    });
+    res.status(201).json(student);
 
   } catch (error) {
-    console.error(error);
+    console.error("Student add error:", error);
     res.status(500).json({ message: "Error saving student" });
   }
 });
