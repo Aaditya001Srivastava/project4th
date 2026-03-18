@@ -95,11 +95,50 @@ const Attendance = mongoose.model("Attendance", AttendanceSchema);
    STUDENT ROUTES
 =========================== */
 
+// app.post("/students", async (req, res) => {
+//   try {
+//     const student = new Student(req.body);
+//     await student.save();
+//     res.status(201).json(student);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error saving student" });
+//   }
+// });
+
+const { spawn } = require("child_process");
+
 app.post("/students", async (req, res) => {
   try {
-    const student = new Student(req.body);
-    await student.save();
-    res.status(201).json(student);
+    const { photo } = req.body;
+
+    // Call Python script
+    const python = spawn("python", ["encode_single.py"]);
+
+    let result = "";
+
+    python.stdout.on("data", (data) => {
+      result += data.toString();
+    });
+
+    python.stdin.write(photo);
+    python.stdin.end();
+
+    python.on("close", async () => {
+      const encoding = JSON.parse(result || "null");
+
+      console.log("Encoding:", encoding);
+
+      const student = new Student({
+        ...req.body,
+        faceEncoding: encoding
+      });
+
+      await student.save();
+
+      res.status(201).json(student);
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error saving student" });
