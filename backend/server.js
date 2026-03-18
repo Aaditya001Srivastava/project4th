@@ -255,10 +255,60 @@ app.delete("/students/:id", async (req, res) => {
 //   }
 // });
 
+// app.post("/register-student", async (req, res) => {
+//   try {
+
+//     console.log("Register student request received");
+
+//     const student = new Student({
+//       first_name: req.body.first_name,
+//       last_name: req.body.last_name,
+//       dob: req.body.dob,
+//       branch: req.body.branch,
+//       mobile_number: req.body.mobile_number,
+//       photo: req.body.photo,
+//       //faceEncoding: []
+//     });
+
+//     await student.save();
+
+//     console.log("Student saved");
+
+//     res.json({ 
+//       success:true,
+//       message: "Student registered successfully" });
+
+//   } catch (err) {
+//     console.error("Register error:", err);
+//     res.status(500).json({ message: "Error registering student" });
+//   }
+// });
+
 app.post("/register-student", async (req, res) => {
   try {
-
     console.log("Register student request received");
+
+    const { photo } = req.body;
+
+    let base64 = photo;
+    if (photo.includes(",")) {
+      base64 = photo.split(",")[1];
+    }
+
+    // 🔥 CALL PYTHON ENCODE API
+    const response = await axios.post(
+      "https://project4th-production.up.railway.app/encode",
+      { image: base64 },
+      { timeout: 20000 }
+    );
+
+    const parsed = response.data;
+
+    console.log("Python response:", parsed);
+
+    if (!parsed.success || !parsed.encoding) {
+      return res.status(400).json({ message: "Face encoding failed" });
+    }
 
     const student = new Student({
       first_name: req.body.first_name,
@@ -267,22 +317,24 @@ app.post("/register-student", async (req, res) => {
       branch: req.body.branch,
       mobile_number: req.body.mobile_number,
       photo: req.body.photo,
-      faceEncoding: []
+      faceEncoding: parsed.encoding   // ✅ FIXED
     });
 
     await student.save();
 
-    console.log("Student saved");
+    console.log("Student saved with encoding");
 
-    res.json({ 
-      success:true,
-      message: "Student registered successfully" });
+    res.json({
+      success: true,
+      message: "Student registered successfully"
+    });
 
   } catch (err) {
     console.error("Register error:", err);
     res.status(500).json({ message: "Error registering student" });
   }
 });
+
 
 /* ===========================
    ATTENDANCE ROUTES
