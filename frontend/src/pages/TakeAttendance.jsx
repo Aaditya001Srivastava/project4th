@@ -4,7 +4,6 @@ import Webcam from "react-webcam";
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);
-
   const [capturedPhoto, setCapturedPhoto] = useState("");
 
   // 📍 Get device location
@@ -75,7 +74,7 @@ export default function TakeAttendance() {
     }
   };
 
-  // 🔥 Face Recognition + Auto Attendance
+  // 🔥 Face Recognition + Attendance (FIXED + ORIGINAL LOGIC)
   const recognizeFace = async () => {
     if (!capturedPhoto) {
       alert("Please capture a photo!");
@@ -87,21 +86,7 @@ export default function TakeAttendance() {
     const RADIUS = 6;
 
     try {
-      // 🔥 STEP 1: FACE RECOGNITION FIRST (FAST)
-      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: capturedPhoto }), // ✅ FIXED KEY
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        alert("Face not recognized!");
-        return;
-      }
-
-      // 🔥 STEP 2: LOCATION AFTER (no delay feeling)
+      // 📍 LOCATION CHECK
       const location = await getLocation();
 
       const distance = getDistance(
@@ -120,17 +105,46 @@ export default function TakeAttendance() {
         return;
       }
 
-      // 🔥 STEP 3: PERIOD CHECK
-      const period = getCurrentPeriod();
+      // 🔥 BACKEND CALL (IMPORTANT: keep "photo")
+      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo: capturedPhoto }),
+      });
 
-      if (!period) {
+      const data = await response.json();
+
+      if (data.status === "outside_time") {
         alert("Attendance allowed only between 9 AM and 1 PM");
         return;
       }
 
-      alert("Attendance marked successfully (Period " + period + ")");
+      if (data.status === "already_marked") {
+        alert("Attendance already marked for this period");
+        return;
+      }
 
-      setCapturedPhoto("");
+      if (data.status === "no_face") {
+        alert("No face detected!");
+        return;
+      }
+
+      if (data.status === "unknown") {
+        alert("Face not recognized!");
+        return;
+      }
+
+      if (data.status === "matched") {
+        const period = getCurrentPeriod();
+
+        if (!period) {
+          alert("Attendance allowed only between 9 AM and 1 PM");
+          return;
+        }
+
+        alert("Attendance marked for " + data.name + " (Period " + period + ")");
+        setCapturedPhoto("");
+      }
 
     } catch (error) {
       console.error(error);
