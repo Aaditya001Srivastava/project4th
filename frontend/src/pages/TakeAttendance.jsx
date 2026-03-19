@@ -111,10 +111,10 @@ if (distance > RADIUS) {
 
       const data = await response.json();
 
-      // if (data.status === "outside_time") {
-      //   alert("Attendance allowed only between 9 AM and 1 PM");
-      //   return;
-      // }
+      if (data.status === "outside_time") {
+        alert("Attendance allowed only between 9 AM and 1 PM");
+        return;
+      }
 
       if (data.status === "already_marked") {
         alert("Attendance already marked for this period");
