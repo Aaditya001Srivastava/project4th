@@ -49,12 +49,16 @@ export default function TakeAttendance() {
     const minutes = now.getHours() * 60 + now.getMinutes();
 
     const periods = [
-      { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
-      { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
-      { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
-      { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
-      { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 }
-    ];
+  { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
+  { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
+  { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
+  { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
+  { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 },
+  { id: 6, start: 14 * 60, end: 14 * 60 + 50 },  
+  { id: 7, start: 14 * 60 + 50, end: 14 * 60 + 100 }, 
+  { id: 8, start: 14 * 60 + 100, end: 14 * 60 + 150 }, 
+  { id: 9, start: 14 * 60 + 150, end: 14 * 60 + 200 }  
+];
 
     for (let p of periods) {
       if (minutes >= p.start && minutes < p.end) {
