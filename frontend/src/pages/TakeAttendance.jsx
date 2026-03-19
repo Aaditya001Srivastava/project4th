@@ -135,8 +135,8 @@ if (distance > RADIUS) {
 
         const period = getCurrentPeriod();
 
-        if (!period) {
-          alert("Attendance allowed only between 9 AM and 1 PM");
+        if (!period) {//===========
+          alert("Attendance allowed only between 9 AM and 1 PM"+data.name);
           return;
         }
 
