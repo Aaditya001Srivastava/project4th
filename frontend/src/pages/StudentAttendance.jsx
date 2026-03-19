@@ -6,6 +6,9 @@ export default function StudentAttendance() {
   const [records, setRecords] = useState([]);
   const [selectedId, setSelectedId] = useState("");
 
+  // 🔥 NEW STATE
+  const [search, setSearch] = useState("");
+
   // Fetch from MongoDB
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +29,17 @@ export default function StudentAttendance() {
     fetchData();
   }, []);
 
-  // ✅ FIXED FILTER
+  // 🔥 FILTERED STUDENTS
+  const filteredStudents = students.filter((s) => {
+    const q = search.toLowerCase();
+    return (
+      s.first_name?.toLowerCase().includes(q) ||
+      s.last_name?.toLowerCase().includes(q) ||
+      s.branch?.toLowerCase().includes(q)
+    );
+  });
+
+  // ✅ FILTER RECORDS
   const studentHistory = records.filter(
     (r) => String(r.studentId?._id) === String(selectedId)
   );
@@ -39,15 +52,31 @@ export default function StudentAttendance() {
     <div style={{ padding: 20, maxWidth: 900, margin: "0 auto" }}>
       <h2>Student Attendance History</h2>
 
-      <label>Select Student:</label>
+      {/* 🔥 SEARCH INPUT */}
+      <label>Search Student:</label>
+      <input
+        type="text"
+        placeholder="Type name or branch..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          width: "100%",
+          padding: 10,
+          borderRadius: 6,
+          marginTop: 10,
+          marginBottom: 10,
+        }}
+      />
+
+      {/* 🔥 DROPDOWN */}
       <select
         value={selectedId}
         onChange={(e) => setSelectedId(e.target.value)}
-        style={{ width: "100%", padding: 10, borderRadius: 6, marginTop: 10 }}
+        style={{ width: "100%", padding: 10, borderRadius: 6 }}
       >
         <option value="">-- Choose Student --</option>
 
-        {students.map((s) => (
+        {filteredStudents.map((s) => (
           <option value={s._id} key={s._id}>
             {s.first_name} {s.last_name} ({s.branch})
           </option>
