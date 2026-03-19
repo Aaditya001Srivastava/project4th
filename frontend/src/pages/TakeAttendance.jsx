@@ -72,159 +72,86 @@ export default function TakeAttendance() {
     }
   };
 
-  // 🔥 Face Recognition + Auto Attendance
-//   const recognizeFace = async () => {
-//     if (!capturedPhoto) {
-//       alert("Please capture a photo!");
-//       return;
-//     }
-
-//     const IERT_LAT = 25.4286;
-//     const IERT_LON = 81.8463;
-//     const RADIUS=6;
-
-//     try {
-//       const location = await getLocation();
-
-//       const distance = getDistance(
-//         location.latitude,
-//         location.longitude,
-//         IERT_LAT,
-//         IERT_LON
-//       );
-
-// console.log("Your Lat:", location.latitude);
-// console.log("Your Lon:", location.longitude);
-// console.log("Distance from IERT (km):", distance);
-
-// // ✅ FIXED LOGIC
-// if (distance > RADIUS) {
-//   alert("You are not inside IERT campus!");
-//   return;
-// }
-
-//       const response = await fetch("https://project4th-backend.onrender.com/recognize", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ photo: capturedPhoto }),
-//       });
-
-//       const data = await response.json();
-
-//       if (data.status === "outside_time") {
-//         alert("Attendance allowed only between 9 AM and 1 PM");
-//         return;
-//       }
-
-//       if (data.status === "already_marked") {
-//         alert("Attendance already marked for this period");
-//         return;
-//       }
-
-//       if (data.status === "no_face") {
-//         alert("No face detected!");
-//         return;
-//       }
-
-//       if (data.status === "unknown") {
-//         alert("Face not recognized!");
-//         return;
-//       }
-
-//       if (data.status === "matched") {
-
-//         const period = getCurrentPeriod();
-
-//         if (!period) {//===========
-//           alert("Attendance allowed only between 9 AM and 1 PM"+data.name);
-//           return;
-//         }
-
-//         alert("Attendance marked for " + data.name + " (Period " + period + ")");
-
-//         setCapturedPhoto("");
-//       }
-
-//      } catch (error) {
-//       console.error(error);
-//       alert("Recognition error");
-//     }
-//   };
-
-    const recognizeFace = async () => {
-  if (!capturedPhoto) {
-    alert("Please capture a photo!");
-    return;
-  }
-
-  const IERT_LAT = 25.4286;
-  const IERT_LON = 81.8463;
-  const RADIUS = 6;
-
-  try {
-    // 🔥 STEP 1: RECOGNIZE FIRST (CRITICAL)
-    const response = await fetch("https://project4th-backend.onrender.com/recognize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photo: capturedPhoto }),
-    });
-
-    const data = await response.json();
-
-    // ❌ NO FACE
-    if (data.status === "no_face") {
-      alert("No face detected!");
+  //🔥 Face Recognition + Auto Attendance
+  const recognizeFace = async () => {
+    if (!capturedPhoto) {
+      alert("Please capture a photo!");
       return;
     }
 
-    // ❌ UNKNOWN FACE → STOP EVERYTHING HERE
-    if (data.status === "unknown") {
-      alert("Face not recognized!");
-      return;
-    }
+    const IERT_LAT = 25.4286;
+    const IERT_LON = 81.8463;
+    const RADIUS=6;
 
-    // ✅ NOW WE KNOW FACE IS VALID
-    const name = data.name;
+    try {
+      const location = await getLocation();
 
-    // 🔥 STEP 2: TIME CHECK
-    const period = getCurrentPeriod();
+      const distance = getDistance(
+        location.latitude,
+        location.longitude,
+        IERT_LAT,
+        IERT_LON
+      );
 
-    // if (!period) {
-    //   alert(name + " - Attendance allowed only between 9 AM and 1 PM");
-    //   return;
-    // }
-    if (!period) {
-  if (data.status === "matched") {
-    alert(data.name + " - Attendance allowed only between 9 AM and 1 PM");
-  } else {
-    alert("Attendance allowed only between 9 AM and 1 PM");
-  }
+console.log("Your Lat:", location.latitude);
+console.log("Your Lon:", location.longitude);
+console.log("Distance from IERT (km):", distance);
+
+// ✅ FIXED LOGIC
+if (distance > RADIUS) {
+  alert("You are not inside IERT campus!");
   return;
 }
-    // 🔥 STEP 3: LOCATION CHECK
-    const location = await getLocation();
 
-    const distance = getDistance(
-      location.latitude,
-      location.longitude,
-      IERT_LAT,
-      IERT_LON
-    );
+      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo: capturedPhoto }),
+      });
 
-    if (distance > RADIUS) {
-      alert(name + " - You are not inside IERT campus!");
-      return;
+      const data = await response.json();
+
+      if (data.status === "outside_time") {
+        alert("Attendance allowed only between 9 AM and 1 PM");
+        return;
+      }
+
+      if (data.status === "already_marked") {
+        alert("Attendance already marked for this period");
+        return;
+      }
+
+      if (data.status === "no_face") {
+        alert("No face detected!");
+        return;
+      }
+
+      if (data.status === "unknown") {
+        alert("Face not recognized!");
+        return;
+      }
+
+      if (data.status === "matched") {
+
+        const period = getCurrentPeriod();
+
+        if (!period) {//===========
+          alert("Attendance allowed only between 9 AM and 1 PM"+data.name);
+          return;
+        }
+
+        alert("Attendance marked for " + data.name + " (Period " + period + ")");
+
+        setCapturedPhoto("");
+      }
+
+     } catch (error) {
+      console.error(error);
+      alert("Recognition error");
     }
+  };
 
-    // ✅ FINAL SUCCESS
-    alert("Attendance marked for " + name + " (Period " + period + ")");
-    setCapturedPhoto("");
 
-  } catch (error) {
-    console.error(error);
-    alert("Recognition error");
-  }
-};
 
   return (
     <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
