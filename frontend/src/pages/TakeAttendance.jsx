@@ -143,7 +143,7 @@ if (data.status === "matched") {
     return;
   }
 
-  alert("Attendance marked successfully");
+  alert("Attendance marked successfully"+data.name+"for Period "+ period +")");
 
   setCapturedPhoto("");
 }
