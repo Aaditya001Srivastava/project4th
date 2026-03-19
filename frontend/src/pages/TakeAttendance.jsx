@@ -81,7 +81,7 @@ export default function TakeAttendance() {
 
     const IERT_LAT = 25.4286;
     const IERT_LON = 81.8463;
-    const RADIUS=5;
+    const RADIUS=20;
 
     try {
       const location = await getLocation();
