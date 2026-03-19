@@ -99,7 +99,7 @@ console.log("Distance from IERT (km):", distance);
 
 // ✅ FIXED LOGIC
 if (distance > RADIUS) {
-  alert(("Student")+" - You are not inside IERT campus!");
+  alert(" - You are not inside IERT campus!");
   return;
 }
 
