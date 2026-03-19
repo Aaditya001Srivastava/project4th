@@ -116,12 +116,12 @@ const response = await fetch("https://project4th-backend.onrender.com/recognize"
 const data = await response.json();
 
 if (data.status === "outside_time") {
-  alert("Attendance allowed only between 9 AM and 1 PM");
+  alert("Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
   return;
 }
 
 if (data.status === "already_marked") {
-  alert("Attendance already marked for this period");
+  alert("Attendance already marked for this period"+data.name);
   return;
 }
 
@@ -139,11 +139,11 @@ if (data.status === "matched") {
   const period = getCurrentPeriod();
 
   if (!period) {
-    alert("Attendance allowed only between 9 AM and 1 PM");
+    alert("Attendance allowed only between 9 AM and 1 PM or 2PM and 5PM");
     return;
   }
 
-  alert("Attendance marked successfully"+data.name+"for Period "+ period +")");
+  alert("Attendance marked successfully"+data.name+" for Period : "+ period );
 
   setCapturedPhoto("");
 }
