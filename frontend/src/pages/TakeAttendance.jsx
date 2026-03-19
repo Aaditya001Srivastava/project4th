@@ -18,12 +18,7 @@ export default function TakeAttendance() {
             longitude: pos.coords.longitude,
           });
         },
-        () => reject("Location permission denied"),
-        {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge:60000
-        }
+        () => reject("Location permission denied")
       );
     });
   };
@@ -86,7 +81,7 @@ export default function TakeAttendance() {
 
     const IERT_LAT = 25.4286;
     const IERT_LON = 81.8463;
-    const RADIUS=6;
+    const RADIUS=1.5;
 
     try {
       const location = await getLocation();
