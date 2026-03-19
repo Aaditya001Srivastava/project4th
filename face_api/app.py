@@ -7,9 +7,8 @@ import cv2
 app = FastAPI()
 
 
-# 🔹 COMMON FUNCTION (reuse for both)
+# 🔹 COMMON FUNCTION
 def process_image(img_base64):
-    # Handle data:image/... format OR raw base64
     if "," in img_base64:
         img_base64 = img_base64.split(",")[1]
 
@@ -22,13 +21,13 @@ def process_image(img_base64):
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # Resize for better detection
-    rgb = cv2.resize(rgb, (0, 0), fx=0.5, fy=0.5)
+    # 🔥 Faster resize
+    rgb = cv2.resize(rgb, (320, 240))
 
     return rgb, None
 
 
-# 🔹 NEW: ENCODE API (USE THIS WHILE ADDING STUDENT)
+# 🔹 ENCODE API
 @app.post("/encode")
 async def encode(data: dict):
     try:
@@ -40,7 +39,7 @@ async def encode(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=2,
+            number_of_times_to_upsample=0,   # 🔥 FIXED
             model="hog"
         )
 
@@ -58,13 +57,11 @@ async def encode(data: dict):
         return {"success": False, "error": str(e)}
 
 
-# 🔹 EXISTING: RECOGNIZE API (UNCHANGED LOGIC)
+# 🔹 RECOGNIZE API
 @app.post("/recognize")
 async def recognize(data: dict):
-
     try:
         img_base64 = data["image"]
-        print("IMAGE LENGTH:", len(img_base64))
 
         rgb, error = process_image(img_base64)
         if error:
@@ -72,7 +69,7 @@ async def recognize(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=2,
+            number_of_times_to_upsample=0,   # 🔥 FIXED
             model="hog"
         )
 
