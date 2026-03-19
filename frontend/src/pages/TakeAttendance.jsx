@@ -189,11 +189,18 @@ export default function TakeAttendance() {
     // 🔥 STEP 2: TIME CHECK
     const period = getCurrentPeriod();
 
+    // if (!period) {
+    //   alert(name + " - Attendance allowed only between 9 AM and 1 PM");
+    //   return;
+    // }
     if (!period) {
-      alert(name + " - Attendance allowed only between 9 AM and 1 PM");
-      return;
-    }
-
+  if (data.status === "matched") {
+    alert(data.name + " - Attendance allowed only between 9 AM and 1 PM");
+  } else {
+    alert("Attendance allowed only between 9 AM and 1 PM");
+  }
+  return;
+}
     // 🔥 STEP 3: LOCATION CHECK
     const location = await getLocation();
 
