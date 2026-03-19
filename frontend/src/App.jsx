@@ -56,14 +56,32 @@ export default function App() {
         {/* Main content */}
         <main className="main-content">
           <header className="topbar">
-            <div>
-              {user.role === "admin" ? "Welcome, Admin" : "Welcome, Student"}
-            </div>
+  <div>
+    {user.role === "admin" ? "Welcome, Admin" : "Welcome, Student"}
+  </div>
 
-            <div className="right">
-              Today: {new Date().toLocaleDateString()}
-            </div>
-          </header>
+  <div
+    className="right"
+    style={{ display: "flex", gap: "15px", alignItems: "center" }}
+  >
+    <div>Today: {new Date().toLocaleDateString()}</div>
+
+    {/* 🔥 LOGOUT BUTTON */}
+    <button
+      onClick={() => setUser(null)}
+      style={{
+        padding: "6px 12px",
+        background: "#ef4444",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+      }}
+    >
+      Logout
+    </button>
+  </div>
+</header>
 
           <section className="page-wrap">
             <Routes>
