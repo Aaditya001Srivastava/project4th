@@ -121,7 +121,7 @@ if (data.status === "outside_time") {
 }
 
 if (data.status === "already_marked") {
-  alert("Attendance already marked for this period"+data.name);
+  alert(data.name+" Your Attendance already marked for this period");
   return;
 }
 
@@ -143,7 +143,7 @@ if (data.status === "matched") {
     return;
   }
 
-  alert("Attendance marked successfully"+data.name+" for Period : "+ period );
+  alert("Attendance marked successfully "+data.name+" for Period : "+ period );
 
   setCapturedPhoto("");
 }
