@@ -1,9 +1,11 @@
 // Filename: TakeAttendance.jsx
 import { useRef, useState } from "react";
 import Webcam from "react-webcam";
+//const Webcam = require("react-webcam").default;
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);
+
   const [capturedPhoto, setCapturedPhoto] = useState("");
 
   // 📍 Get device location
@@ -20,7 +22,7 @@ export default function TakeAttendance() {
         {
           enableHighAccuracy: false,
           timeout: 5000,
-          maximumAge: 60000,
+          maximumAge:60000
         }
       );
     });
@@ -29,6 +31,7 @@ export default function TakeAttendance() {
   // 📍 Distance calculator
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
+
 
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -74,7 +77,7 @@ export default function TakeAttendance() {
     }
   };
 
-  // 🔥 Face Recognition + Attendance (FIXED + ORIGINAL LOGIC)
+  // 🔥 Face Recognition + Auto Attendance
   const recognizeFace = async () => {
     if (!capturedPhoto) {
       alert("Please capture a photo!");
@@ -83,10 +86,9 @@ export default function TakeAttendance() {
 
     const IERT_LAT = 25.4286;
     const IERT_LON = 81.8463;
-    const RADIUS = 6;
+    const RADIUS=6;
 
     try {
-      // 📍 LOCATION CHECK
       const location = await getLocation();
 
       const distance = getDistance(
@@ -96,16 +98,16 @@ export default function TakeAttendance() {
         IERT_LON
       );
 
-      console.log("Your Lat:", location.latitude);
-      console.log("Your Lon:", location.longitude);
-      console.log("Distance from IERT (km):", distance);
+console.log("Your Lat:", location.latitude);
+console.log("Your Lon:", location.longitude);
+console.log("Distance from IERT (km):", distance);
 
-      if (distance > RADIUS) {
-        alert("You are not inside IERT campus!");
-        return;
-      }
+// ✅ FIXED LOGIC
+if (distance > RADIUS) {
+  alert("You are not inside IERT campus!");
+  return;
+}
 
-      // 🔥 BACKEND CALL (IMPORTANT: keep "photo")
       const response = await fetch("https://project4th-backend.onrender.com/recognize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,6 +137,7 @@ export default function TakeAttendance() {
       }
 
       if (data.status === "matched") {
+
         const period = getCurrentPeriod();
 
         if (!period) {
@@ -143,10 +146,11 @@ export default function TakeAttendance() {
         }
 
         alert("Attendance marked for " + data.name + " (Period " + period + ")");
+
         setCapturedPhoto("");
       }
 
-    } catch (error) {
+     } catch (error) {
       console.error(error);
       alert("Recognition error");
     }
