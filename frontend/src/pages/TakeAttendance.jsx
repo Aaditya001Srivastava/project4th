@@ -1,7 +1,6 @@
 // Filename: TakeAttendance.jsx
 import { useRef, useState } from "react";
 import Webcam from "react-webcam";
-//const Webcam = require("react-webcam").default;
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);
@@ -18,7 +17,12 @@ export default function TakeAttendance() {
             longitude: pos.coords.longitude,
           });
         },
-        () => reject("Location permission denied")
+        () => reject("Location permission denied"),
+        {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 60000,
+        }
       );
     });
   };
@@ -26,7 +30,6 @@ export default function TakeAttendance() {
   // 📍 Distance calculator
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
-
 
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -81,9 +84,24 @@ export default function TakeAttendance() {
 
     const IERT_LAT = 25.4286;
     const IERT_LON = 81.8463;
-    const RADIUS=6;
+    const RADIUS = 6;
 
     try {
+      // 🔥 STEP 1: FACE RECOGNITION FIRST (FAST)
+      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: capturedPhoto }), // ✅ FIXED KEY
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        alert("Face not recognized!");
+        return;
+      }
+
+      // 🔥 STEP 2: LOCATION AFTER (no delay feeling)
       const location = await getLocation();
 
       const distance = getDistance(
@@ -93,59 +111,28 @@ export default function TakeAttendance() {
         IERT_LON
       );
 
-console.log("Your Lat:", location.latitude);
-console.log("Your Lon:", location.longitude);
-console.log("Distance from IERT (km):", distance);
+      console.log("Your Lat:", location.latitude);
+      console.log("Your Lon:", location.longitude);
+      console.log("Distance from IERT (km):", distance);
 
-// ✅ FIXED LOGIC
-if (distance > RADIUS) {
-  alert("You are not inside IERT campus!");
-  return;
-}
+      if (distance > RADIUS) {
+        alert("You are not inside IERT campus!");
+        return;
+      }
 
-      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photo: capturedPhoto }),
-      });
+      // 🔥 STEP 3: PERIOD CHECK
+      const period = getCurrentPeriod();
 
-      const data = await response.json();
-
-      if (data.status === "outside_time") {
+      if (!period) {
         alert("Attendance allowed only between 9 AM and 1 PM");
         return;
       }
 
-      if (data.status === "already_marked") {
-        alert("Attendance already marked for this period");
-        return;
-      }
+      alert("Attendance marked successfully (Period " + period + ")");
 
-      if (data.status === "no_face") {
-        alert("No face detected!");
-        return;
-      }
+      setCapturedPhoto("");
 
-      if (data.status === "unknown") {
-        alert("Face not recognized!");
-        return;
-      }
-
-      if (data.status === "matched") {
-
-        const period = getCurrentPeriod();
-
-        if (!period) {
-          alert("Attendance allowed only between 9 AM and 1 PM");
-          return;
-        }
-
-        alert("Attendance marked for " + data.name + " (Period " + period + ")");
-
-        setCapturedPhoto("");
-      }
-
-     } catch (error) {
+    } catch (error) {
       console.error(error);
       alert("Recognition error");
     }
