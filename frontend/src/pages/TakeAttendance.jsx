@@ -99,7 +99,7 @@ console.log("Distance from IERT (km):", distance);
 
 // ✅ FIXED LOGIC
 if (distance > RADIUS) {
-  alert("You are not inside IERT campus!");
+  alert((name||"Student")+" - You are not inside IERT campus!");
   return;
 }
 
@@ -110,9 +110,11 @@ if (distance > RADIUS) {
       });
 
       const data = await response.json();
+      //added later: one line below
+      let name = data.name;
 
       if (data.status === "outside_time") {
-        alert("Attendance allowed only between 9 AM and 1 PM");
+        alert(name+" - Attendance allowed only between 9 AM and 1 PM");
         return;
       }
 
@@ -136,7 +138,7 @@ if (distance > RADIUS) {
         const period = getCurrentPeriod();
 
         if (!period) {//===========
-          alert("Attendance allowed only between 9 AM and 1 PM"+data.name);
+          alert(name+" - Attendance allowed only between 9 AM and 1 PM");
           return;
         }
 
