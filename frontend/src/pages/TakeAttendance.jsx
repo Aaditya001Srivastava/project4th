@@ -116,7 +116,7 @@ const response = await fetch("https://project4th-backend.onrender.com/recognize"
 const data = await response.json();
 
 if (data.status === "outside_time") {
-  alert(data.name+"Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
+  alert("Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
   return;
 }
 
