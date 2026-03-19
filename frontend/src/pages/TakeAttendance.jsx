@@ -111,6 +111,11 @@ if (distance > RADIUS) {
 
       const data = await response.json();
 
+      if (data.status === "unknown") {
+        alert("Face not recognized!");
+        return;
+      }
+
       if (data.status === "outside_time") {
         alert("Attendance allowed only between 9 AM and 1 PM");
         return;
@@ -126,10 +131,10 @@ if (distance > RADIUS) {
         return;
       }
 
-      if (data.status === "unknown") {
-        alert("Face not recognized!");
-        return;
-      }
+      // if (data.status === "unknown") {
+      //   alert("Face not recognized!");
+      //   return;
+      // }
 
       if (data.status === "matched") {
 
