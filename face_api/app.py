@@ -4,8 +4,6 @@ import face_recognition
 import numpy as np
 import cv2
 
-
-
 app = FastAPI()
 
 
@@ -23,8 +21,8 @@ def process_image(img_base64):
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # 🔥 Faster resize
-    rgb = cv2.resize(rgb, (320, 240))
+    # ❌ REMOVED BAD RESIZE (IMPORTANT FIX)
+    # rgb = cv2.resize(rgb, (320, 240))
 
     return rgb, None
 
@@ -41,7 +39,7 @@ async def encode(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=0,   # 🔥 FIXED
+            number_of_times_to_upsample=0,
             model="hog"
         )
 
@@ -71,14 +69,17 @@ async def recognize(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=0,   # 🔥 FIXED
+            number_of_times_to_upsample=0,
             model="hog"
         )
 
         if len(face_locations) == 0:
-            return {"success": False}
+            return {"success": False, "status": "no_face"}
 
         encoding = face_recognition.face_encodings(rgb, face_locations)[0]
+
+        # ⚠️ CURRENTLY YOU ARE ONLY RETURNING ENCODING
+        # Matching is done elsewhere in your system
 
         return {
             "success": True,

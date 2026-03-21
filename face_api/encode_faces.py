@@ -12,11 +12,19 @@ for filename in os.listdir(dataset_path):
         path = os.path.join(dataset_path, filename)
 
         image = face_recognition.load_image_file(path)
-        encodings = face_recognition.face_encodings(image)
 
-        if len(encodings) > 0:
+        # ✅ Ensure consistent processing
+        rgb = image
+
+        # ✅ Detect face first (IMPORTANT)
+        face_locations = face_recognition.face_locations(rgb)
+
+        if len(face_locations) > 0:
+            encodings = face_recognition.face_encodings(rgb, face_locations)
             known_encodings.append(encodings[0])
             known_names.append(filename.split(".")[0])
+        else:
+            print(f"No face found in {filename}")
 
 print("Encoding complete")
 
