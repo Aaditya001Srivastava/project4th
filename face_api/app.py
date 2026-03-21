@@ -3,6 +3,7 @@ import base64
 import face_recognition
 import numpy as np
 import cv2
+from datetime import datetime   # ✅ ADDED
 
 app = FastAPI()
 
@@ -20,9 +21,6 @@ def process_image(img_base64):
         return None, "image decode failed"
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # ❌ REMOVED BAD RESIZE (IMPORTANT FIX)
-    # rgb = cv2.resize(rgb, (320, 240))
 
     return rgb, None
 
@@ -61,6 +59,14 @@ async def encode(data: dict):
 @app.post("/recognize")
 async def recognize(data: dict):
     try:
+        # ✅ SUNDAY CHECK (ONLY ADDITION)
+        today = datetime.now().weekday()  # Monday=0 ... Sunday=6
+        if today == 6:
+            return {
+                "success": False,
+                "status": "sunday"
+            }
+
         img_base64 = data["image"]
 
         rgb, error = process_image(img_base64)
@@ -78,9 +84,6 @@ async def recognize(data: dict):
 
         encoding = face_recognition.face_encodings(rgb, face_locations)[0]
 
-        # ⚠️ CURRENTLY YOU ARE ONLY RETURNING ENCODING
-        # Matching is done elsewhere in your system
-
         return {
             "success": True,
             "encoding": encoding.tolist()
@@ -88,3 +91,4 @@ async def recognize(data: dict):
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+    
