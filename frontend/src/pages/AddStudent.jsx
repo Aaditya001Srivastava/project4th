@@ -1,8 +1,6 @@
-// Filename: AddStudent.jsx
-
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
-//const Webcam = require("react-webcam").default;
+
 console.log("THIS ADDSTUDENT IS LOADED");
 
 export default function AddStudent() { 
@@ -17,12 +15,14 @@ export default function AddStudent() {
   const [capturedDataUrl, setCapturedDataUrl] = useState("");
   const [message, setMessage] = useState("");
 
-  const captureFromWebcam = () => {
-    const img = webcamRef.current?.getScreenshot({
-      width: 320,
-      height: 240
-    });
+  const videoConstraints = {
+    width: 640,
+    height: 480,
+    facingMode: "user"
+  };
 
+  const captureFromWebcam = () => {
+    const img = webcamRef.current?.getScreenshot();
     if (img) {
       setCapturedDataUrl(img);
       setPhotoFile(null);
@@ -37,72 +37,73 @@ export default function AddStudent() {
     }
   };
 
-  // 🔥 CHANGED: Now using MongoDB instead of localStorage
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("HANDLE SUBMIT CALLED");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("HANDLE SUBMIT CALLED");
 
-  if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
-    setMessage("Please fill all fields");
-    return;
-  }
+    if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
+      setMessage("Please fill all fields");
+      return;
+    }
 
-  if (!photoFile && !capturedDataUrl) {
-    setMessage("Please upload or capture a photo");
-    return;
-  }
+    if (!photoFile && !capturedDataUrl) {
+      setMessage("Please upload or capture a photo");
+      return;
+    }
 
-  let photoURL = capturedDataUrl;
+    let photoURL = capturedDataUrl;
 
-  if (photoFile) {
-    const reader = new FileReader();
-    reader.readAsDataURL(photoFile);
+    if (photoFile) {
+      const reader = new FileReader();
+      reader.readAsDataURL(photoFile);
 
-    await new Promise((resolve) => {
-      reader.onloadend = () => {
-        photoURL = reader.result;
-        resolve();
-      };
-    });
-  }
-try {
-  const response = await fetch("https://project4th-backend-1.onrender.com/register-student", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      first_name: firstName,
-      last_name: lastName,
-      dob,
-      branch,
-      mobile_number: mobileNumber,
-      photo: photoURL
-    }),
-  });
+      await new Promise((resolve) => {
+        reader.onloadend = () => {
+          photoURL = reader.result;
+          resolve();
+        };
+      });
+    }
 
-  const data = await response.json();
+    try {
+      const response = await fetch("https://project4th-backend-1.onrender.com/register-student", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          dob,
+          branch,
+          mobile_number: mobileNumber,
+          photo: photoURL
+        }),
+      });
 
-  if (!response.ok) {
-    setMessage(data.message || "Failed to save student");
-    return;
-  }
+      const data = await response.json();
 
-  setMessage("Student saved successfully!");
+      if (!response.ok) {
+        setMessage(data.message || "Failed to save student");
+        return;
+      }
 
-  setFirstName("");
-  setLastName("");
-  setDob("");
-  setBranch("");
-  setMobileNumber("");
-  setPhotoFile(null);
-  setCapturedDataUrl("");
+      setMessage("Student saved successfully!");
 
-} catch (error) {
-  console.error(error);
-  setMessage("Error saving student.");
-}
-};
+      setFirstName("");
+      setLastName("");
+      setDob("");
+      setBranch("");
+      setMobileNumber("");
+      setPhotoFile(null);
+      setCapturedDataUrl("");
+
+    } catch (error) {
+      console.error(error);
+      setMessage("Error saving student.");
+    }
+  };
+
   return (
     <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
       <h2 style={{ textAlign: "center", marginBottom: 30 }}>Register Student</h2>
@@ -150,9 +151,7 @@ try {
                   audio={false}
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
-                  screenshotQuality={0.4}
-                  width={200}
-                  videoConstraints={{ facingMode: "user" }}
+                  videoConstraints={videoConstraints}
                 />
                 <button type="button" style={buttonStyle}
                   onClick={captureFromWebcam}>
