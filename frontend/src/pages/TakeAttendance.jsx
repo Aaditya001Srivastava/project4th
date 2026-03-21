@@ -1,17 +1,14 @@
+// Filename: TakeAttendance.jsx
 import { useRef, useState } from "react";
 import Webcam from "react-webcam";
+//const Webcam = require("react-webcam").default;
 
 export default function TakeAttendance() {
   const webcamRef = useRef(null);
 
   const [capturedPhoto, setCapturedPhoto] = useState("");
 
-  const videoConstraints = {
-    width: 640,
-    height: 480,
-    facingMode: "user"
-  };
-
+  // 📍 Get device location
   const getLocation = () => {
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
@@ -26,8 +23,10 @@ export default function TakeAttendance() {
     });
   };
 
+  // 📍 Distance calculator
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
+
 
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -44,21 +43,22 @@ export default function TakeAttendance() {
     return R * c;
   }
 
+  // 🕒 Detect current class period
   function getCurrentPeriod() {
     const now = new Date();
     const minutes = now.getHours() * 60 + now.getMinutes();
 
     const periods = [
-      { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
-      { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
-      { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
-      { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
-      { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 },
-      { id: 6, start: 14 * 60, end: 14 * 60 + 50 },
-      { id: 7, start: 14 * 60 + 50, end: 14 * 60 + 100 },
-      { id: 8, start: 14 * 60 + 100, end: 14 * 60 + 150 },
-      { id: 9, start: 14 * 60 + 150, end: 14 * 60 + 200 }
-    ];
+  { id: 1, start: 9 * 60, end: 9 * 60 + 50 },
+  { id: 2, start: 9 * 60 + 50, end: 9 * 60 + 100 },
+  { id: 3, start: 9 * 60 + 100, end: 9 * 60 + 150 },
+  { id: 4, start: 9 * 60 + 150, end: 9 * 60 + 200 },
+  { id: 5, start: 9 * 60 + 200, end: 9 * 60 + 250 },
+  { id: 6, start: 14 * 60, end: 14 * 60 + 50 },  
+  { id: 7, start: 14 * 60 + 50, end: 14 * 60 + 100 }, 
+  { id: 8, start: 14 * 60 + 100, end: 14 * 60 + 150 }, 
+  { id: 9, start: 14 * 60 + 150, end: 14 * 60 + 200 }  
+];
 
     for (let p of periods) {
       if (minutes >= p.start && minutes < p.end) {
@@ -76,6 +76,7 @@ export default function TakeAttendance() {
     }
   };
 
+  //🔥 Face Recognition + Auto Attendance
   const recognizeFace = async () => {
     if (!capturedPhoto) {
       alert("Please capture a photo!");
@@ -84,7 +85,7 @@ export default function TakeAttendance() {
 
     const IERT_LAT = 25.4286;
     const IERT_LON = 81.8463;
-    const RADIUS = 6;
+    const RADIUS=6;
 
     try {
       const location = await getLocation();
@@ -96,61 +97,64 @@ export default function TakeAttendance() {
         IERT_LON
       );
 
-      console.log("Your Lat:", location.latitude);
-      console.log("Your Lon:", location.longitude);
-      console.log("Distance from IERT (km):", distance);
+console.log("Your Lat:", location.latitude);
+console.log("Your Lon:", location.longitude);
+console.log("Distance from IERT (km):", distance);
 
-      if (distance > RADIUS) {
-        alert("You are not inside IERT campus!");
-        return;
-      }
+// ✅ FIXED LOGIC (original working version)
+if (distance > RADIUS) {
+  alert("You are not inside IERT campus!");
+  return;
+}
 
-      const response = await fetch("https://project4th-backend.onrender.com/recognize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photo: capturedPhoto }),
-      });
+const response = await fetch("https://project4th-backend.onrender.com/recognize", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ photo: capturedPhoto }),
+});
 
-      const data = await response.json();
+const data = await response.json();
 
-      if (data.status === "outside_time") {
-        alert("Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
-        return;
-      }
+if (data.status === "outside_time") {
+  alert("Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
+  return;
+}
 
-      if (data.status === "already_marked") {
-        alert(data.name + " Your Attendance already marked for this period");
-        return;
-      }
+if (data.status === "already_marked") {
+  alert(data.name+" Your Attendance already marked for this period");
+  return;
+}
 
-      if (data.status === "no_face") {
-        alert("No face detected!");
-        return;
-      }
+if (data.status === "no_face") {
+  alert("No face detected!");
+  return;
+}
 
-      if (data.status === "unknown") {
-        alert("Face not recognized!");
-        return;
-      }
+if (data.status === "unknown") {
+  alert("Face not recognized!");
+  return;
+}
 
-      if (data.status === "matched") {
-        const period = getCurrentPeriod();
+if (data.status === "matched") {
+  const period = getCurrentPeriod();
 
-        if (!period) {
-          alert("Attendance allowed only between 9 AM and 1 PM or 2PM and 5PM");
-          return;
-        }
+  if (!period) {
+    alert("Attendance allowed only between 9 AM and 1 PM or 2PM and 5PM");
+    return;
+  }
 
-        alert("Attendance marked successfully " + data.name + " for Period : " + period);
+  alert("Attendance marked successfully "+data.name+" for Period : "+ period );
 
-        setCapturedPhoto("");
-      }
+  setCapturedPhoto("");
+}
 
-    } catch (error) {
+     } catch (error) {
       console.error(error);
       alert("Recognition error");
     }
   };
+
+
 
   return (
     <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
@@ -158,6 +162,7 @@ export default function TakeAttendance() {
         Take Attendance
       </h2>
 
+        
       <div
         style={{
           display: "flex",
@@ -166,12 +171,18 @@ export default function TakeAttendance() {
           marginBottom: 20,
         }}
       >
+
+        
         <Webcam
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
+          width={300}
+          height={220}
           playsInline
-          videoConstraints={videoConstraints}
+          videoConstraints={{
+            facingMode: "user"
+          }}
           style={{ borderRadius: 8, border: "2px solid #2ecc71" }}
         />
 
