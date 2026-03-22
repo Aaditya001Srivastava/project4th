@@ -121,7 +121,7 @@ if (data.status==="sunday"){
 }
 
 if (data.status === "outside_time") {
-  alert("Attendance allowed only between 9 AM and 1 PM or 2PM nd 5PM");
+  alert("Attendance allowed only between 9 AM and 1 PM or 2PM and 5PM");
   return;
 }
 

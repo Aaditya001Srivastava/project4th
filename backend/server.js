@@ -514,9 +514,15 @@ app.post("/recognize", async (req, res) => {
 
     const parsed = response.data;
 
+    // if (!parsed.success) {
+    //   return res.json({ status: "no_face" });
+    // }
+
     if (!parsed.success) {
-      return res.json({ status: "no_face" });
-    }
+  return res.json({
+    status: parsed.status || "error"
+  });
+}
 
     const unknownEncoding = parsed.encoding;
 
