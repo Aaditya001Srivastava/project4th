@@ -22,6 +22,9 @@ def process_image(img_base64):
     np_arr = np.frombuffer(img_bytes, np.uint8)
     image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
+    # ✅ ADDED (improves detection on low-quality devices)
+    image = cv2.resize(image, (0,0), fx=1.5, fy=1.5)
+
     # ✅ DEBUG
     print("Image shape:", image.shape if image is not None else None)
 
@@ -48,7 +51,7 @@ async def encode(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=2,   # ✅ FIXED
+            number_of_times_to_upsample=3,   # ✅ FIXED (increased detection strength)
             model="hog"
         )
 
@@ -94,7 +97,7 @@ async def recognize(data: dict):
 
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=2,   # ✅ FIXED (WAS 0 ❌)
+            number_of_times_to_upsample=3,   # ✅ FIXED (increased detection strength)
             model="hog"
         )
 
