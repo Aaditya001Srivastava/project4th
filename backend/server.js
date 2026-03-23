@@ -165,7 +165,7 @@ app.post("/students", async (req, res) => {
     const parsed = response.data;
 
     if (!parsed.success || !parsed.encoding) {
-      return res.status(400).json({ message: "Face encoding failed" });
+      return res.status(400).json({ message: parsed.error || "Face encoding failed" });
     }
 
     const student = new Student({
@@ -180,11 +180,12 @@ app.post("/students", async (req, res) => {
     res.status(201).json(student);
 
   } catch (error) {
-    console.error("Student add error:", error);
-    res.status(500).json({ message: "Error saving student" });
+    console.error("Student add error FULL:", error?.response?.data || error.message); // ✅ FIXED
+    res.status(500).json({
+      message: error?.response?.data?.error || error.message || "Error saving student"
+    });
   }
 });
-
 app.get("/students", async (req, res) => {
   try {
     console.log("Connection state at query:", mongoose.connection.readyState);
@@ -307,7 +308,7 @@ app.post("/register-student", async (req, res) => {
     console.log("Python response:", parsed);
 
     if (!parsed.success || !parsed.encoding) {
-      return res.status(400).json({ message: "Face encoding failed" });
+      return res.status(400).json({ message: parsed.error || "Face encoding failed" });
     }
 
     const student = new Student({
@@ -330,11 +331,12 @@ app.post("/register-student", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ message: "Error registering student" });
+    console.error("Register error FULL:", err?.response?.data || err.message); // ✅ FIXED
+    res.status(500).json({
+      message: err?.response?.data?.error || err.message || "Error registering student"
+    });
   }
 });
-
 
 /* ===========================
    ATTENDANCE ROUTES
