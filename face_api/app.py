@@ -3,7 +3,8 @@ import base64
 import face_recognition
 import numpy as np
 import cv2
-from datetime import datetime   # ✅ ADDED
+from datetime import datetime
+import pytz   # ✅ ADDED (timezone fix)
 
 app = FastAPI()
 
@@ -13,11 +14,18 @@ def process_image(img_base64):
     if "," in img_base64:
         img_base64 = img_base64.split(",")[1]
 
-    img_bytes = base64.b64decode(img_base64)
+    try:
+        img_bytes = base64.b64decode(img_base64)
+    except Exception:
+        return None, "base64 decode failed"
+
     np_arr = np.frombuffer(img_bytes, np.uint8)
     image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    if image is None:
+    # ✅ DEBUG
+    print("Image shape:", image.shape if image is not None else None)
+
+    if image is None or image.size == 0:
         return None, "image decode failed"
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -35,11 +43,16 @@ async def encode(data: dict):
         if error:
             return {"success": False, "error": error}
 
+        if rgb is None:
+            return {"success": False, "error": "invalid image"}
+
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=0,
+            number_of_times_to_upsample=2,   # ✅ FIXED
             model="hog"
         )
+
+        print("ENCODE - Faces found:", len(face_locations))  # ✅ DEBUG
 
         if len(face_locations) == 0:
             return {"success": False, "error": "no face detected"}
@@ -59,8 +72,11 @@ async def encode(data: dict):
 @app.post("/recognize")
 async def recognize(data: dict):
     try:
-        # ✅ SUNDAY CHECK (ONLY ADDITION)
-        today = datetime.now().weekday()  # Monday=0 ... Sunday=6
+        # ✅ TIMEZONE FIX (IMPORTANT)
+        ist = pytz.timezone("Asia/Kolkata")
+        today = datetime.now(ist).weekday()  # Monday=0 ... Sunday=6
+
+        # ✅ SUNDAY CHECK
         if today == 6:
             return {
                 "success": False,
@@ -73,11 +89,16 @@ async def recognize(data: dict):
         if error:
             return {"success": False, "error": error}
 
+        if rgb is None:
+            return {"success": False, "error": "invalid image"}
+
         face_locations = face_recognition.face_locations(
             rgb,
-            number_of_times_to_upsample=0,
+            number_of_times_to_upsample=2,   # ✅ FIXED (WAS 0 ❌)
             model="hog"
         )
+
+        print("RECOGNIZE - Faces found:", len(face_locations))  # ✅ DEBUG
 
         if len(face_locations) == 0:
             return {"success": False, "status": "no_face"}
@@ -91,4 +112,3 @@ async def recognize(data: dict):
 
     except Exception as e:
         return {"success": False, "error": str(e)}
-    
