@@ -78,7 +78,7 @@ export default function StudentAttendance() {
 
         {filteredStudents.map((s) => (
           <option value={s._id} key={s._id}>
-            {s.first_name} {s.last_name} | {s.branch} | {s.roll_number}
+            {s.first_name} {s.last_name} | {s.branch} | {s.mobile_number}
           </option>
         ))}
       </select>

@@ -12,7 +12,7 @@ export default function AddStudent() {
   const [lastName, setLastName] = useState("");
   const [dob, setDob] = useState("");
   const [branch, setBranch] = useState("");
-  const [rollNumber, setRollNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [capturedDataUrl, setCapturedDataUrl] = useState("");
   const [message, setMessage] = useState("");
@@ -42,7 +42,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   console.log("HANDLE SUBMIT CALLED");
 
-  if (!firstName || !lastName || !dob || !branch || !rollNumber) {
+  if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
     setMessage("Please fill all fields");
     return;
   }
@@ -76,7 +76,7 @@ try {
       last_name: lastName,
       dob,
       branch,
-      roll_number: rollNumber,
+      mobile_number: mobileNumber,
       photo: photoURL
     }),
   });
@@ -94,7 +94,7 @@ try {
   setLastName("");
   setDob("");
   setBranch("");
-  setRollNumber("");
+  setMobileNumber("");
   setPhotoFile(null);
   setCapturedDataUrl("");
 
@@ -134,9 +134,9 @@ try {
               <input style={inputStyle} value={branch}
                 onChange={(e) => setBranch(e.target.value)} />
 
-              <label>Roll Number</label>
-              <input style={inputStyle} value={rollNumber}
-                onChange={(e) => setRollNumber(e.target.value)} />
+              <label>Mobile Number</label>
+              <input style={inputStyle} value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)} />
             </div>
 
             <div style={{ flex: 1, minWidth: 200 }}>

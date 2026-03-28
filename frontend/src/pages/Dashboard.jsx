@@ -77,7 +77,7 @@ export default function Dashboard() {
             <th>First Name</th>
             <th>Last Name</th>
             <th>Branch</th>
-            <th>Roll Number</th>
+            <th>Mobile Number</th>
             <th>Delete</th>
           </tr>
         </thead>
@@ -112,7 +112,7 @@ export default function Dashboard() {
                 <td>{s.first_name}</td>
                 <td>{s.last_name}</td>
                 <td>{s.branch}</td>
-                <td>{s.roll_number}</td>
+                <td>{s.mobile_number}</td>
                 <td>
                   <button
                     style={{
