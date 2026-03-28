@@ -12,7 +12,7 @@ export default function AddStudent() {
   const [lastName, setLastName] = useState("");
   const [dob, setDob] = useState("");
   const [branch, setBranch] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [capturedDataUrl, setCapturedDataUrl] = useState("");
   const [message, setMessage] = useState("");
@@ -42,7 +42,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   console.log("HANDLE SUBMIT CALLED");
 
-  if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
+  if (!firstName || !lastName || !dob || !branch || !rollNumber) {
     setMessage("Please fill all fields");
     return;
   }
@@ -134,8 +134,8 @@ try {
               <input style={inputStyle} value={branch}
                 onChange={(e) => setBranch(e.target.value)} />
 
-              <label>Mobile Number</label>
-              <input style={inputStyle} value={mobileNumber}
+              <label>Roll Number</label>
+              <input style={inputStyle} value={rollNumber}
                 onChange={(e) => setMobileNumber(e.target.value)} />
             </div>
 

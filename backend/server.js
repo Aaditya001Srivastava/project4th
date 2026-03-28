@@ -316,7 +316,7 @@ app.post("/register-student", async (req, res) => {
       last_name: req.body.last_name,
       dob: req.body.dob,
       branch: req.body.branch,
-      mobile_number: req.body.mobile_number,
+      roll_number: req.body.mobile_number,
       photo: req.body.photo,
       faceEncoding: parsed.encoding   // ✅ FIXED
     });
