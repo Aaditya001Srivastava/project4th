@@ -76,7 +76,7 @@ try {
       last_name: lastName,
       dob,
       branch,
-      mobile_number: mobileNumber,
+      roll_number: rollNumber,
       photo: photoURL
     }),
   });
@@ -94,7 +94,7 @@ try {
   setLastName("");
   setDob("");
   setBranch("");
-  setMobileNumber("");
+  setRollNumber("");
   setPhotoFile(null);
   setCapturedDataUrl("");
 
@@ -136,7 +136,7 @@ try {
 
               <label>Roll Number</label>
               <input style={inputStyle} value={rollNumber}
-                onChange={(e) => setMobileNumber(e.target.value)} />
+                onChange={(e) => setRollNumber(e.target.value)} />
             </div>
 
             <div style={{ flex: 1, minWidth: 200 }}>
