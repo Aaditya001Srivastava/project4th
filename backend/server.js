@@ -157,7 +157,7 @@ app.post("/students", async (req, res) => {
 
     // call Python API (Railway)
     const response = await axios.post(
-      "https://project4th-production.up.railway.app/encode",
+      "https://project4th-production-19fe.up.railway.app/encode",
       { image: base64 },
       { timeout: 20000 }
     );
@@ -298,7 +298,7 @@ app.post("/register-student", async (req, res) => {
 
     // 🔥 CALL PYTHON ENCODE API
     const response = await axios.post(
-      "https://project4th-production.up.railway.app/encode",
+      "https://project4th-production-19fe.up.railway.app/encode",
       { image: base64 },
       { timeout: 20000 }
     );
@@ -509,7 +509,7 @@ app.post("/recognize", async (req, res) => {
 
     // Send image to Python face API
     const response = await axios.post(
-      "https://project4th-production.up.railway.app/recognize",
+      "https://project4th-production-19fe.up.railway.app/recognize",
       { image: base64 },
       { timeout: 20000 }
     );
