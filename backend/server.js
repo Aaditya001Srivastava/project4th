@@ -40,8 +40,11 @@ async function startServer() {
       throw new Error("MONGO_URI is undefined. Check your .env file.");
     }
 
-    await mongoose.connect(process.env.MONGO_URI);
-
+    //await mongoose.connect(process.env.MONGO_URI);
+    
+    await mongoose.connect(process.env.MONGO_URI, {
+      dbName: "smart-attendance"
+    });
     console.log("MongoDB Connected");
     console.log("Connected DB Name:", mongoose.connection.name);
     console.log("Ready State:", mongoose.connection.readyState);
