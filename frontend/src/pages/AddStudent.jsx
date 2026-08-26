@@ -1,13 +1,10 @@
 // Filename: AddStudent.jsx
-
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
 //const Webcam = require("react-webcam").default;
 console.log("THIS ADDSTUDENT IS LOADED");
-
 export default function AddStudent() { 
   const webcamRef = useRef(null);
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dob, setDob] = useState("");
@@ -16,7 +13,6 @@ export default function AddStudent() {
   const [photoFile, setPhotoFile] = useState(null);
   const [capturedDataUrl, setCapturedDataUrl] = useState("");
   const [message, setMessage] = useState("");
-
   const captureFromWebcam = () => {
     const img = webcamRef.current?.getScreenshot({
       width: 320,
@@ -28,7 +24,6 @@ export default function AddStudent() {
       setPhotoFile(null);
     }
   };
-
   const handleFileInput = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -36,12 +31,10 @@ export default function AddStudent() {
       setCapturedDataUrl("");
     }
   };
-
   // 🔥 CHANGED: Now using MongoDB instead of localStorage
 const handleSubmit = async (e) => {
   e.preventDefault();
   console.log("HANDLE SUBMIT CALLED");
-
   if (!firstName || !lastName || !dob || !branch || !mobileNumber) {
     setMessage("Please fill all fields");
     return;

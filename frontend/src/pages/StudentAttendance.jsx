@@ -1,14 +1,11 @@
 // Filename: StudentAttendance.jsx
 import React, { useEffect, useState } from "react";
-
 export default function StudentAttendance() {
   const [students, setStudents] = useState([]);
   const [records, setRecords] = useState([]);
   const [selectedId, setSelectedId] = useState("");
-
   // 🔥 NEW STATE
   const [search, setSearch] = useState("");
-
   // Fetch from MongoDB
   useEffect(() => {
     const fetchData = async () => {
@@ -25,10 +22,8 @@ export default function StudentAttendance() {
         console.error(error);
       }
     };
-
     fetchData();
   }, []);
-
   // 🔥 FILTERED STUDENTS
   const filteredStudents = students.filter((s) => {
     const q = search.toLowerCase();
@@ -38,7 +33,6 @@ export default function StudentAttendance() {
       s.branch?.toLowerCase().includes(q)
     );
   });
-
   // ✅ FILTER RECORDS
   const studentHistory = records.filter(
     (r) => String(r.studentId?._id) === String(selectedId)

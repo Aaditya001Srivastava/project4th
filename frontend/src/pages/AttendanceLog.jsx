@@ -1,10 +1,8 @@
 // Filename: AttendanceLog.jsx
 import React, { useEffect, useState } from "react";
-
 export default function AttendanceLog() {
   const [records, setRecords] = useState([]);
   const [students, setStudents] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,28 +18,23 @@ export default function AttendanceLog() {
         console.error(error);
       }
     };
-
     fetchData();
   }, []);
-
   const getStudent = (id) => {
     return students.find((s) => String(s._id) === String(id));
   };
-
   // 🔥 DELETE FUNCTION
   const deleteAttendance = async (id) => {
     try {
       await fetch(`https://project4th-backend-1.onrender.com/attendance/${id}`, {
         method: "DELETE",
       });
-
       // Remove from UI instantly
       setRecords(records.filter((r) => r._id !== id));
     } catch (error) {
       console.error("Error deleting attendance:", error);
     }
   };
-
   return (
     <div style={{ padding: 20, maxWidth: 900, margin: "0 auto" }}>
       <h2>Attendance Log</h2>

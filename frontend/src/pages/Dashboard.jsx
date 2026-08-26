@@ -1,16 +1,13 @@
 // Filename: Dashboard.jsx
 import React, { useEffect, useState } from "react";
-
 export default function Dashboard() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(20); // ✅ added
-
   useEffect(() => {
     loadStudents();
   }, []);
-
   const loadStudents = async () => {
     try {
       setLoading(true);
@@ -32,7 +29,6 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-
   const deleteStudent = async (id) => {
     try {
       const res = await fetch(
