@@ -73,9 +73,9 @@ export default function TakeAttendance() {
       return;
     }
 
-    const IERT_LAT = 25.4286;
-    const IERT_LON = 81.8463;
-    const RADIUS=6;
+    const IERT_LAT = 26.92186;
+    const IERT_LON = 80.95153;
+    const RADIUS = 6;
 
     try {
       const location = await getLocation();
