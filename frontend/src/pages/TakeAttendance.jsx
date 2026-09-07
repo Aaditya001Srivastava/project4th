@@ -73,8 +73,8 @@ export default function TakeAttendance() {
       return;
     }
 
-    const IERT_LAT = 26.92186;
-    const IERT_LON = 80.95153;
+    const IERT_LAT = 28.749944;
+    const IERT_LON = 77.117028;
     const RADIUS = 6;
 
     try {
