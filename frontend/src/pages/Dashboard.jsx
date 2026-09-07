@@ -13,7 +13,7 @@ export default function Dashboard() {
       setLoading(true);
 
       const res = await fetch(
-        "https://project4th-backend-1.onrender.com/students"
+        "https://project4th-backend.onrender.com/students"
       );
 
       if (!res.ok) {
@@ -32,7 +32,7 @@ export default function Dashboard() {
   const deleteStudent = async (id) => {
     try {
       const res = await fetch(
-        `https://project4th-backend-1.onrender.com/students/${id}`,
+        `https://project4th-backend.onrender.com/students/${id}`,
         {
           method: "DELETE",
         }

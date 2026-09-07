@@ -1,19 +1,25 @@
 const express = require("express");
+// this means that we are calling express framework and storing it in a variable
 const mongoose = require("mongoose");
+// we are calling mongoose framework in mongoose variable
 const cors = require("cors");
+//CORS is a browser security mechanism that controls whether requests from one origin are allowed to access resources on another origin.
 require("dotenv").config();
+// this uses dotenv framework to use .env variables which saves us from hardcodeing secrets
 const bcrypt = require("bcryptjs");
+// pssword hashing library to hash passwords before storing them in the database
 const jwt = require("jsonwebtoken");
+// jwt i guess uses tokens to validate authentication and authorization
 const axios = require("axios");
-
+// axios is a promise based HTTP client for the browser and node.js. It makes it easy to send asynchronous HTTP requests to REST endpoints and perform CRUD operations. It can be used in plain JavaScript or with a library like Vue or React.
 const app = express();
-
+// this creates an express app by calling the express function.
 /* ✅ PROPER CORS */
 
 
 
 app.use(cors());
-
+// this registers cors middleware
 app.use((req,res,next)=>{
   res.header("Access-Control-Allow-Origin","*");
   res.header("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -21,46 +27,55 @@ app.use((req,res,next)=>{
   next();
 });
 
-//app.options("*", cors());
+
 
 app.use(express.json({ limit: "50mb" }));
+// this limits the data sent on server to 50 mb
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
+// this limits the data sent on server to 50 mb in url encoded form
+// true: allows parser to handle nested structure rather than simple key-val pairs
+// false: allows parser to handle only simple key-val pairs
 console.log("ENV CHECK:", process.env.MONGO_URI);
-
+// calls the .env variable MONGO_URI and logs it to console 
 /* ===========================
    CONNECT MONGODB SAFELY
 =========================== */
 
 mongoose.set("strictQuery", false);
-
+// this is a mongoose setting that allows us to use the $in operator in queries without getting a warning
 async function startServer() {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error("MONGO_URI is undefined. Check your .env file.");
     }
+    
 
     //await mongoose.connect(process.env.MONGO_URI);
     
     await mongoose.connect(process.env.MONGO_URI, {
       dbName: "smart-attendance"
+      // this sets the database name to "smart-attendance" instead of default "test"
     });
     console.log("MongoDB Connected");
+    // logs to console that MongoDB is connected
     console.log("Connected DB Name:", mongoose.connection.name);
+    // logs to console the name of the connected database
     console.log("Ready State:", mongoose.connection.readyState);
+    // logs to console the ready state of the connection (1 means connected)
 
     app.listen(process.env.PORT || 5000, () => {
       console.log("Server running on port 5000");
     });
-
+    // will listen to port 5000 or the port defined in .env file
   } catch (err) {
     console.error("Mongo Error:", err);
     process.exit(1);
+    // exits if error
   }
 }
 
 startServer();
-
+// this calls the startServer function to connect to MongoDB and start the server
 /* ===========================
    STUDENT SCHEMA
 =========================== */
